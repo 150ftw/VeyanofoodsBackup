@@ -138,8 +138,9 @@ a {
     z-index: -1;
 }
 .hero-content {
-  max-width: 600px;
-  animation: fadeIn 1s ease-out forwards;
+  max-width: 700px;
+  animation: heroSlideUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
 }
 .hero h1 {
   font-size: 4rem;
@@ -206,15 +207,25 @@ a {
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 2rem;
 }
+.products,
+.use-cases,
+.story,
+.footer {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 500px;
+}
+
 .product-card {
-  background: var(--card-bg);
-  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: 12px;
   overflow: hidden;
-  transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease;
+  cursor: pointer;
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  will-change: transform;
 }
 .product-card:hover {
   transform: translateY(-5px);

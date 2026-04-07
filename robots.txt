@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# Sitemap link
+Sitemap: https://www.veyano.in/sitemap.xml

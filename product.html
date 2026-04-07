@@ -3,8 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Shop Veyano Premium Roasted Makhana. Choose from Plain, Salted, Peri-Peri flavors.">
-  <title>Buy Premium Makhana | Veyano</title>
+  <meta name="description" content="Shop Veyano Premium Roasted Makhana. Choose from Plain, Salted, and Peri-Peri flavors. Pure, wholesome, and guilt-free snacking.">
+  <meta name="keywords" content="Buy Makhana, Peri Peri Makhana, Roasted Fox Nuts, Healthy Snacking India, Veyano Products">
+  <meta name="robots" content="index, follow">
+  
+  <title>Buy Premium Roasted Makhana | Veyano Foods</title>
+
+  <!-- Canonical URL -->
+  <link rel="canonical" href="https://www.veyano.in/product.html">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="product">
+  <meta property="og:url" content="https://www.veyano.in/product.html">
+  <meta property="og:title" content="Buy Premium Roasted Makhana | Veyano">
+  <meta property="og:description" content="Choose your favorite flavor: Plain, Salted, or Peri-Peri. Freshly roasted for the perfect crunch.">
+  <meta property="og:image" content="https://www.veyano.in/assets/combo.png">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,6 +28,34 @@
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
   <link rel="stylesheet" href="styles.css">
+
+  <!-- SEO Structured Data (Product) -->
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org/",
+      "@type": "Product",
+      "name": "Veyano Roasted Makhana",
+      "image": [
+        "https://www.veyano.in/assets/plain.png",
+        "https://www.veyano.in/assets/salted.png",
+        "https://www.veyano.in/assets/periperi.png"
+      ],
+      "description": "Premium freshly roasted makhana (fox nuts). Available in Plain, Salted, and Peri-Peri flavors.",
+      "brand": {
+        "@type": "Brand",
+        "name": "Veyano"
+      },
+      "offers": {
+        "@type": "AggregateOffer",
+        "url": "https://www.veyano.in/product.html",
+        "priceCurrency": "INR",
+        "lowPrice": "399",
+        "highPrice": "899",
+        "offerCount": "4",
+        "availability": "https://schema.org/InStock"
+      }
+    }
+  </script>
 </head>
 <body>
 
@@ -39,8 +80,8 @@
       <!-- Image Gallery Column -->
       <div class="product-gallery">
         <div class="product-image-container" id="main-gallery-container" style="height:auto; max-height:600px;">
-          <img id="main-product-image" src="./assets/plain.png" alt="Veyano Premium Makhana" class="product-img base-img" style="max-height:600px;">
-          <img id="hover-product-image" src="./assets/plain_hover.png" alt="Veyano Premium Makhana Bowl" class="product-img hover-img" style="max-height:600px;">
+          <img id="main-product-image" src="./assets/plain.png" alt="Veyano Premium Makhana" class="product-img base-img" style="max-height:600px;" width="600" height="600" loading="eager" decoding="async">
+          <img id="hover-product-image" src="./assets/plain_hover.png" alt="Veyano Premium Makhana Bowl" class="product-img hover-img" style="max-height:600px;" width="600" height="600" loading="lazy" decoding="async">
         </div>
       </div>
 

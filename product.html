@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Shop Veyano Premium Roasted Makhana. Choose from Plain, Salted, Peri-Peri flavors.">
+  <title>Buy Premium Makhana | Veyano</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  
+  <!-- Razorpay SDK -->
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Navbar -->
+  <header class="navbar">
+    <div class="container flex justify-between items-center">
+      <a href="index.html" class="brand-logo">Veyano</a>
+      <div class="nav-actions">
+        <nav>
+          <a href="index.html#products" class="btn btn-outline" style="padding: 0.5rem 1.5rem; text-transform: none;">All Products</a>
+        </nav>
+        <div class="cart-icon" id="cart-icon-btn">
+          <svg viewBox="0 0 24 24"><path d="M9 20a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm7 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm1.75-2.25L19 7H5.21l-.94-2H1V3h3.27l4.42 9.39L7 15.12c0 .07 0 .13.01.2.06.82.74 1.43 1.56 1.43h10.18v-1.5H8.75c-.07 0-.13-.03-.16-.09l.03-.06 1.13-2.1h7.45c.56 0 1.06-.31 1.3-.78z"/></svg>
+          <span class="cart-badge" id="cart-count">0</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="product-detail-section container" id="product-details">
+      <!-- Image Gallery Column -->
+      <div class="product-gallery">
+        <div class="product-image-container" id="main-gallery-container" style="height:auto; max-height:600px;">
+          <img id="main-product-image" src="./assets/plain.png" alt="Veyano Premium Makhana" class="product-img base-img" style="max-height:600px;">
+          <img id="hover-product-image" src="./assets/plain_hover.png" alt="Veyano Premium Makhana Bowl" class="product-img hover-img" style="max-height:600px;">
+        </div>
+      </div>
+
+      <!-- Info Column -->
+      <div class="product-meta">
+        <h1 id="product-title">Classic Plain Makhana</h1>
+        <div class="product-price" id="product-price">₹199 <span style="font-size:0.9rem; color:#666;">(200g)</span></div>
+
+        <div class="variant-selector">
+          <p style="margin-bottom: 0.5rem; color:#aaa; font-size: 0.9rem; text-transform:uppercase; letter-spacing:1px;">Select Variant:</p>
+          <button class="variant-btn active" data-variant="plain">Plain</button>
+          <button class="variant-btn" data-variant="salted">Salted</button>
+          <button class="variant-btn" data-variant="periperi">Peri-Peri</button>
+          <button class="variant-btn" data-variant="combo">Combo (Pack of 3)</button>
+        </div>
+
+        <button class="btn" id="add-to-cart-btn" style="width: 100%; text-align: center; margin-bottom: 1rem;">Add to Cart</button>
+        <a href="https://wa.me/1234567890?text=I%20want%20to%20order%20makhana" target="_blank" class="btn btn-outline" style="display:block; width: 100%; text-align: center; margin-bottom: 2rem;">Order on WhatsApp</a>
+
+        <ul class="benefits-list">
+          <li>100% Roasted, Not Fried</li>
+          <li>High in Protein & Fiber</li>
+          <li>Zero Cholesterol</li>
+          <li>Gluten-Free & Vegan Friendly</li>
+          <li><b>Free delivery on orders above ₹499</b></li>
+        </ul>
+
+        <div class="ingredients-box">
+          <h4 style="margin-bottom: 0.5rem;">Ingredients:</h4>
+          <p id="ingredients-text" style="color:#aaa; font-size:0.9rem;">Premium Grade Fox Nuts (Makhana).</p>
+
+          <h4 style="margin-top: 1rem; margin-bottom: 0.5rem;">Shelf Life:</h4>
+          <p style="color:#aaa; font-size:0.9rem;">3 Months from the date of packaging.</p>
+
+          <h4 style="margin-top: 1rem; margin-bottom: 0.5rem;">Note:</h4>
+          <p style="color:#666; font-size:0.8rem;">Cash on Delivery (COD) is available at an additional charge of ₹99.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-grid">
+      <div class="footer-col">
+        <div class="brand-logo" style="margin-bottom: 1rem;">Veyano</div>
+        <p style="color:#888; max-width:250px;">A better alternative to fried snacks.</p>
+        
+        <!-- Legal & Compliance [NEW] -->
+        <div class="fssai-section" style="margin-top: 1.5rem;">
+          <div class="fssai-box">
+            <svg class="fssai-logo" viewBox="0 0 100 40" width="80" height="32" fill="#888">
+              <rect width="100" height="40" rx="4" fill="none" stroke="#888" stroke-width="1"/>
+              <text x="50" y="25" text-anchor="middle" font-weight="700" font-size="12">FSSAI</text>
+            </svg>
+            <div style="font-size: 0.7rem; color: #888; margin-top: 0.3rem;">
+              Lic No. 20826010000397
+            </div>
+          </div>
+        </div>
+        
+        <p style="color:#666; font-size:0.9rem; margin-top:1rem;"><a href="mailto:veyanofoods@gmail.com">veyanofoods@gmail.com</a></p>
+      </div>
+      <div class="footer-col" style="text-align:right;">
+         <div style="margin-bottom: 1rem;"><a href="https://www.instagram.com/veyanofoods/?hl=en" target="_blank" style="color:#888;">Follow on Instagram</a></div>
+         <div class="cod-badge">COD (₹99 extra) | Free Delivery above ₹499</div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Cart UI Elements -->
+  <div class="cart-overlay" id="cart-overlay"></div>
+  <div class="cart-drawer" id="cart-drawer">
+    <div class="cart-header">
+      <h3>Your Cart</h3>
+      <button class="close-cart" id="close-cart-btn">&times;</button>
+    </div>
+    <div class="cart-body" id="cart-items-container">
+      <!-- Items dynamically injected here -->
+    </div>
+    <div class="cart-footer" id="cart-footer">
+      <div class="cart-summary-row">
+        <span>Subtotal</span>
+        <span id="cart-subtotal">₹0</span>
+      </div>
+      <div class="cart-summary-row">
+        <span>Delivery</span>
+        <span id="cart-delivery">₹0</span>
+      </div>
+      <div class="cart-summary-total">
+        <span>Total</span>
+        <span id="cart-total">₹0</span>
+      </div>
+      <button class="btn" id="checkout-btn" style="width: 100%;">Checkout with Razorpay</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+  <script src="liquid-ether.js"></script>
+</body>
+</html>

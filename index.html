@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Veyano - Premium freshly roasted makhana (fox nuts). A clean, light, and healthy alternative to fried snacks. Shop Plain, Salted, and Peri-Peri flavors.">
+  <title>Veyano | Premium Roasted Makhana</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Razorpay SDK -->
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  
+  <link rel="stylesheet" href="styles.css">
+  
+  <!-- SEO Structured Data -->
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Brand",
+      "name": "Veyano",
+      "description": "Premium roasted makhana snack brand."
+    }
+  </script>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <header class="navbar">
+    <div class="container flex justify-between items-center">
+      <a href="index.html" class="brand-logo" id="nav-logo">Veyano</a>
+      <div class="nav-actions">
+        <nav>
+          <a href="#products" class="btn btn-outline" style="padding: 0.5rem 1.5rem; text-transform: none;">Shop Now</a>
+        </nav>
+        <div class="cart-icon" id="cart-icon-btn">
+          <svg viewBox="0 0 24 24"><path d="M9 20a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm7 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm1.75-2.25L19 7H5.21l-.94-2H1V3h3.27l4.42 9.39L7 15.12c0 .07 0 .13.01.2.06.82.74 1.43 1.56 1.43h10.18v-1.5H8.75c-.07 0-.13-.03-.16-.09l.03-.06 1.13-2.1h7.45c.56 0 1.06-.31 1.3-.78z"/></svg>
+          <span class="cart-badge" id="cart-count">0</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Hero Section -->
+    <section class="hero" id="hero">
+      <div class="container">
+        <div class="hero-content">
+          <h1>Fresh Roasted Makhana, Made for Clean Snacking</h1>
+          <p>Light, crunchy, and a better alternative to fried snacks. Premium quality fox nuts roasted to perfection.</p>
+          <a href="#products" class="btn" id="hero-cta">Shop Now</a>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Trust & Social Proof Bar [NEW] -->
+    <section class="trust-bar">
+      <div class="container trust-bar-grid">
+        <div class="trust-bar-item">
+          <svg class="trust-icon" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+          <span>Trusted by 5,000+ Snack Lovers</span>
+        </div>
+        <div class="trust-bar-item">
+          <svg class="trust-icon" viewBox="0 0 24 24"><path d="M20 4H4v2h16V4zm1 10v-2l-1-5H4l-1 5v2h1v6h10v-6h4v6h2v-6h1zm-9 4H6v-4h6v4z"/></svg>
+          <span>Available in 100+ Retail Stores</span>
+        </div>
+        <div class="trust-bar-item">
+          <svg class="trust-icon" viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.06 1.13-2.1h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
+          <span>Now on Meesho | Coming Soon to Amazon & Flipkart</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Trust Section -->
+    <section class="trust" id="trust">
+      <div class="container">
+        <div class="trust-grid">
+          <div class="trust-item">
+            <h4>Small Batches</h4>
+            <p>Made in small batches to ensure premium quality.</p>
+          </div>
+          <div class="trust-item">
+            <h4>Freshly Prepared</h4>
+            <p>Roasted, never fried. Delivering ultimate freshness.</p>
+          </div>
+          <div class="trust-item">
+            <h4>Hygienically Packed</h4>
+            <p>Sealed with care to retain the natural crunch.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Products Section -->
+    <section class="products" id="products">
+      <div class="container">
+        <h2 class="section-title">Our Premium Selection</h2>
+        <div class="product-grid">
+          <!-- Item 1 -->
+          <a href="product.html?variant=plain" class="product-card" id="prod-plain">
+            <div class="product-image-container">
+              <img src="./assets/plain.png" alt="Plain Roasted Makhana" class="product-img base-img">
+              <img src="./assets/plain_hover.png" alt="Plain Roasted Makhana Bowl" class="product-img hover-img">
+            </div>
+            <div class="product-info">
+              <h3>Classic Plain Makhana</h3>
+              <p>Pure, natural crunch (200g)</p>
+              <span class="btn btn-outline">View Details</span>
+            </div>
+          </a>
+          <!-- Item 2 -->
+          <a href="product.html?variant=salted" class="product-card" id="prod-salted">
+            <div class="product-image-container">
+              <img src="./assets/salted.png" alt="Salted Roasted Makhana" class="product-img base-img">
+              <img src="./assets/salted_hover.png" alt="Salted Roasted Makhana Bowl" class="product-img hover-img">
+            </div>
+            <div class="product-info">
+              <h3>Lightly Salted Makhana</h3>
+              <p>The perfect savory balance (200g)</p>
+              <span class="btn btn-outline">View Details</span>
+            </div>
+          </a>
+          <!-- Item 3 -->
+          <a href="product.html?variant=periperi" class="product-card" id="prod-periperi">
+            <div class="product-image-container">
+              <img src="./assets/periperi.png" alt="Peri-Peri Roasted Makhana" class="product-img base-img">
+              <img src="./assets/periperi_hover.png" alt="Peri-Peri Roasted Makhana Bowl" class="product-img hover-img">
+            </div>
+            <div class="product-info">
+              <h3>Fiery Peri-Peri Makhana</h3>
+              <p>Bold and spicy kick (200g)</p>
+              <span class="btn btn-outline">View Details</span>
+            </div>
+          </a>
+          <!-- Item 4 -->
+          <a href="product.html?variant=combo" class="product-card" id="prod-combo">
+            <div class="product-image-container">
+              <img src="./assets/combo.png" alt="Combo Pack Makhana" class="product-img base-img">
+              <img src="./assets/combo_hover.png" alt="Combo Pack Makhana Bowl" class="product-img hover-img">
+            </div>
+            <div class="product-info">
+              <h3>The Ultimate Combo Pack</h3>
+              <p>All Three Flavors (3 x 200g)</p>
+              <span class="btn btn-outline">View Details</span>
+            </div>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Perfect for Every Occasion Section [Visual Grid] -->
+    <section class="use-cases" id="use-cases">
+      <div class="container">
+        <h2 class="section-title">Perfect For Every Occasion</h2>
+        <div class="use-grid-visual">
+          <div class="use-card-visual">
+            <div class="use-img-wrapper">
+              <img src="./assets/tea_snack.png" alt="Tea and Veyano Snack" class="use-img">
+            </div>
+            <div class="use-content-visual">
+              <h3>The Evening Snack</h3>
+              <p>Beat the 4 PM slump with guilt-free crunch.</p>
+            </div>
+          </div>
+          <div class="use-card-visual">
+            <div class="use-img-wrapper">
+              <img src="./assets/office_desk.png" alt="Office Desk with Veyano" class="use-img">
+            </div>
+            <div class="use-content-visual">
+              <h3>Office Desk Companion</h3>
+              <p>Keep a jar at work for clean, mess-free munching.</p>
+            </div>
+          </div>
+          <div class="use-card-visual">
+            <div class="use-img-wrapper">
+              <img src="./assets/travel_backpack.png" alt="Veyano in backpack" class="use-img">
+            </div>
+            <div class="use-content-visual">
+              <h3>Travel Friendly</h3>
+              <p>Lightweight and satisfying for your long journeys.</p>
+            </div>
+          </div>
+          <div class="use-card-visual">
+            <div class="use-img-wrapper">
+              <img src="./assets/fasting_setup.png" alt="Fasting ritual with makhana" class="use-img">
+            </div>
+            <div class="use-content-visual">
+              <h3>Fasting (Navratri)</h3>
+              <p>An ideal energy booster for your fasting days.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Story Section -->
+    <section class="story" id="story">
+      <div class="container story-grid">
+        <div class="story-image">
+           <img src="./assets/our_story.png" alt="Our Story Aesthetic" class="story-img">
+        </div>
+        <div class="story-content">
+          <h2 class="section-title" style="text-align: left; margin-bottom: 2rem;">Our Story</h2>
+          <p class="story-quote">"What started in our home kitchen with a simple desire for a clean, guilt-free snack has now evolved into Veyano."</p>
+          <p class="story-text">We believe in transparency, premium quality, and the joy of honest snacking. No shortcuts, just pure, wholesome makhana.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer" id="footer">
+    <div class="container footer-grid">
+      <div class="footer-col">
+        <div class="brand-logo" style="margin-bottom: 1rem;">Veyano</div>
+        <p style="color:#888; max-width:250px;">A better alternative to fried snacks. Freshly roasted, never compromised.</p>
+        
+        <!-- Legal & Compliance [NEW] -->
+        <div class="fssai-section" style="margin-top: 2rem;">
+          <div class="fssai-box">
+            <svg class="fssai-logo" viewBox="0 0 100 40" width="80" height="32" fill="#888">
+              <rect width="100" height="40" rx="4" fill="none" stroke="#888" stroke-width="1"/>
+              <text x="50" y="25" text-anchor="middle" font-weight="700" font-size="12">FSSAI</text>
+            </svg>
+            <div style="font-size: 0.75rem; color: #888; margin-top: 0.5rem;">
+              Lic No. 20826010000397
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="footer-col">
+          <h4>Order & Support</h4>
+          <ul>
+            <li><a href="https://wa.me/1234567890">Order via WhatsApp</a></li>
+            <li><a href="mailto:veyanofoods@gmail.com">veyanofoods@gmail.com</a></li>
+            <li><a href="#">Contact Us</a></li>
+          </ul>
+      </div>
+      <div class="footer-col" style="text-align: right;">
+        <h4>Connect</h4>
+        <ul>
+            <li><a href="https://www.instagram.com/veyanofoods/?hl=en" target="_blank">Instagram</a></li>
+        </ul>
+        <div class="cod-badge">COD Available (₹99 extra) | Free Delivery above ₹499</div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Cart UI Elements -->
+  <div class="cart-overlay" id="cart-overlay"></div>
+  <div class="cart-drawer" id="cart-drawer">
+    <div class="cart-header">
+      <h3>Your Cart</h3>
+      <button class="close-cart" id="close-cart-btn">&times;</button>
+    </div>
+    <div class="cart-body" id="cart-items-container">
+      <!-- Items dynamically injected here -->
+      <div class="cart-empty">Your cart is empty.</div>
+    </div>
+    <div class="cart-footer" id="cart-footer">
+      <div class="cart-summary-row">
+        <span>Subtotal</span>
+        <span id="cart-subtotal">₹0</span>
+      </div>
+      <div class="cart-summary-row">
+        <span>Delivery</span>
+        <span id="cart-delivery">₹0</span>
+      </div>
+      <div class="cart-summary-total">
+        <span>Total</span>
+        <span id="cart-total">₹0</span>
+      </div>
+      <button class="btn" id="checkout-btn" style="width: 100%;">Checkout with Razorpay</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+  <script src="liquid-ether.js"></script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+// server/middleware/auth.js — JWT authentication guard middleware
+
+const jwt = require('jsonwebtoken');
+const User = require('../models/User');
+require('dotenv').config();
+
+module.exports = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Authentication required. Please provide a valid Bearer token.' });
+  }
+
+  const token = authHeader.split(' ')[1];
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findByPk(decoded.id);
+
+    if (!user || !user.isActive) {
+      return res.status(401).json({ error: 'User account not found or deactivated.' });
+    }
+
+    req.user = user;
+    next();
+  } catch (err) {
+    if (err.name === 'TokenExpiredError') {
+      return res.status(401).json({ error: 'Token has expired. Please log in again.' });
+    }
+    return res.status(401).json({ error: 'Invalid token.' });
+  }
+};

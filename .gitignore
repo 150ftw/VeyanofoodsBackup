@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+.npm
+package-lock.json
+
+# Environment variables (CRITICAL)
+.env
+.env.local
+
+# Databases
+*.db
+veyano.db
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Build/Dist
+dist/
+build/
+.next/
+out/

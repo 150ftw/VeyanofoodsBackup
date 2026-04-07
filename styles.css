@@ -752,6 +752,44 @@ a {
   margin-bottom: 0.5rem;
 }
 
+/* Auth Tabs & Forms */
+.auth-tabs {
+  display: flex;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #eee;
+}
+.auth-tab {
+  flex: 1;
+  padding: 1rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-weight: 600;
+  color: #888;
+  transition: all 0.3s ease;
+}
+.auth-tab.active {
+  color: var(--accent-color);
+  border-bottom: 2px solid var(--accent-color);
+}
+.auth-form {
+  transition: opacity 0.3s ease;
+}
+.user-profile-bar {
+  padding: 0.8rem 1.5rem;
+  background: #f9f9f9;
+  border-bottom: 1px solid #eee;
+  font-size: 0.85rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.logout-btn {
+  color: #e74c3c;
+  cursor: pointer;
+  font-weight: 600;
+}
+
 /* Responsive Cart */
 @media (max-width: 450px) {
   .cart-drawer {

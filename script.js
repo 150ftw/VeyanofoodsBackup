@@ -125,6 +125,10 @@ window.addToCart = (id) => {
   toggleCart(true);
 };
 
+// Auth State Management
+let currentUser = JSON.parse(localStorage.getItem('veyano_user')) || null;
+let authToken = localStorage.getItem('veyano_token') || null;
+
 function toggleCart(open) {
   const drawer = document.getElementById('cart-drawer');
   const overlay = document.getElementById('cart-overlay');
@@ -133,6 +137,7 @@ function toggleCart(open) {
   if(open) {
     drawer.classList.add('open');
     overlay.classList.add('open');
+    updateUserUI();
   } else {
     drawer.classList.remove('open');
     overlay.classList.remove('open');
@@ -141,52 +146,131 @@ function toggleCart(open) {
   }
 }
 
-// Checkout Step Navigation
+function updateUserUI() {
+  const container = document.getElementById('cart-drawer-body');
+  let profileBar = document.querySelector('.user-profile-bar');
+  
+  if (currentUser && authToken) {
+    if (!profileBar) {
+      profileBar = document.createElement('div');
+      profileBar.className = 'user-profile-bar';
+      container.prepend(profileBar);
+    }
+    profileBar.innerHTML = `
+      <span>Hi, ${currentUser.name}</span>
+      <span class="logout-btn" onclick="window.logout()">Logout</span>
+    `;
+    // Pre-fill shipping if available
+    const shipName = document.getElementById('ship-name');
+    const shipEmail = document.getElementById('ship-email');
+    if (shipName && !shipName.value) shipName.value = currentUser.name;
+    if (shipEmail && !shipEmail.value) shipEmail.value = currentUser.email;
+  } else {
+    if (profileBar) profileBar.remove();
+  }
+}
+
+window.logout = () => {
+  localStorage.removeItem('veyano_user');
+  localStorage.removeItem('veyano_token');
+  currentUser = null;
+  authToken = null;
+  updateUserUI();
+  goToStep(1);
+};
+
+// Checkout Step Navigation (4 Steps)
 function goToStep(step) {
   const step1 = document.getElementById('cart-step-items');
-  const step2 = document.getElementById('cart-step-shipping');
-  const step3 = document.getElementById('cart-step-success');
+  const step2 = document.getElementById('cart-step-auth');
+  const step3 = document.getElementById('cart-step-shipping');
+  const step4 = document.getElementById('cart-step-success');
+  
   const nextBtn = document.getElementById('next-step-btn');
   const actions = document.getElementById('checkout-actions');
   const summary = document.getElementById('summary-section');
 
+  // Hide all
+  [step1, step2, step3, step4].forEach(s => { if(s) s.style.display = 'none'; });
+
   if (step === 1) {
     step1.style.display = 'block';
-    step2.style.display = 'none';
-    step3.style.display = 'none';
     nextBtn.style.display = 'block';
+    nextBtn.textContent = 'Proceed to Checkout';
     actions.style.display = 'none';
     summary.style.display = 'block';
   } else if (step === 2) {
-    step1.style.display = 'none';
     step2.style.display = 'block';
-    step3.style.display = 'none';
+    nextBtn.style.display = 'none';
+    actions.style.display = 'none'; // Hidden until logged in
+    summary.style.display = 'block';
+  } else if (step === 3) {
+    step3.style.display = 'block';
     nextBtn.style.display = 'none';
     actions.style.display = 'flex';
     summary.style.display = 'block';
-  } else if (step === 3) {
-    step1.style.display = 'none';
-    step2.style.display = 'none';
-    step3.style.display = 'block';
+  } else if (step === 4) {
+    step4.style.display = 'block';
     nextBtn.style.display = 'none';
     actions.style.display = 'none';
     summary.style.display = 'none';
   }
 }
 
-// Backend API Integration
+// Auth Handlers
+async function handleAuth(type, e) {
+  e.preventDefault();
+  const form = e.target;
+  const submitBtn = form.querySelector('button');
+  const originalText = submitBtn.textContent;
+  
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Please wait...';
+
+  const data = type === 'login' 
+    ? { email: form[0].value, password: form[1].value }
+    : { name: form[0].value, email: form[1].value, password: form[2].value };
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/auth/${type}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || 'Authentication failed');
+
+    authToken = result.token;
+    currentUser = result.user;
+    localStorage.setItem('veyano_token', authToken);
+    localStorage.setItem('veyano_user', JSON.stringify(currentUser));
+    
+    updateUserUI();
+    goToStep(3); // Go to shipping
+  } catch (err) {
+    alert(err.message);
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = originalText;
+  }
+}
+
+// Backend Order Integration
 async function placeOrder() {
   const form = document.getElementById('checkout-form');
   if (!form.checkValidity()) {
     return form.reportValidity();
   }
 
+  // Double check login
+  if (!authToken) return goToStep(2);
+
   const placeBtn = document.getElementById('place-order-btn');
   placeBtn.disabled = true;
   placeBtn.textContent = 'Processing...';
 
   const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
-  const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   
   const orderData = {
     customerName: document.getElementById('ship-name').value,
@@ -208,7 +292,10 @@ async function placeOrder() {
   try {
     const response = await fetch(`${API_BASE_URL}/api/orders`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authToken}`
+      },
       body: JSON.stringify(orderData)
     });
 
@@ -218,7 +305,6 @@ async function placeOrder() {
     if (paymentMethod === 'cod') {
       showSuccess(result.orderNumber);
     } else {
-      // Razorpay Flow
       initiateRazorpay(result);
     }
   } catch (err) {
@@ -231,14 +317,13 @@ async function placeOrder() {
 
 function initiateRazorpay(orderResult) {
   const options = {
-    "key": "rzp_test_placeholder", // Will be replaced by backend key if implemented
+    "key": orderResult.razorpayKeyId,
     "amount": orderResult.totalAmount * 100,
     "currency": "INR",
     "name": "Veyano Foods",
     "description": "Order #" + orderResult.orderNumber,
     "order_id": orderResult.razorpayOrderId,
     "handler": function (response) {
-      // Typically we'd verify on backend here, but for now we show success
       showSuccess(orderResult.orderNumber);
     },
     "prefill": {
@@ -253,8 +338,9 @@ function initiateRazorpay(orderResult) {
 }
 
 function showSuccess(orderNumber) {
-  document.getElementById('order-number-display').textContent = `Order #${orderNumber}`;
-  goToStep(3);
+  const display = document.getElementById('order-number-display');
+  if(display) display.textContent = `Order #${orderNumber}`;
+  goToStep(4);
   cart = [];
   saveCart();
 }
@@ -296,7 +382,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     updatePageContent(variant);
-
     variantBtns.forEach(btn => {
       btn.addEventListener('click', (e) => {
         const v = e.target.dataset.variant;
@@ -320,10 +405,37 @@ document.addEventListener('DOMContentLoaded', () => {
   // Checkout Step Listeners
   document.getElementById('next-step-btn')?.addEventListener('click', () => {
     if (cart.length === 0) return alert("Your cart is empty!");
-    goToStep(2);
+    
+    if (!authToken) {
+      goToStep(2); // Force Login/Register
+    } else {
+      goToStep(3); // Already logged in, go to shipping
+    }
   });
-  document.getElementById('back-to-cart-btn')?.addEventListener('click', () => goToStep(1));
+
+  document.getElementById('back-to-cart-btn')?.addEventListener('click', () => {
+    goToStep(1);
+  });
+
   document.getElementById('place-order-btn')?.addEventListener('click', placeOrder);
+
+  // Auth Tab Logic
+  document.getElementById('tab-login')?.addEventListener('click', () => {
+    document.getElementById('tab-login').classList.add('active');
+    document.getElementById('tab-signup').classList.remove('active');
+    document.getElementById('login-form').style.display = 'block';
+    document.getElementById('signup-form').style.display = 'none';
+  });
+
+  document.getElementById('tab-signup')?.addEventListener('click', () => {
+    document.getElementById('tab-signup').classList.add('active');
+    document.getElementById('tab-login').classList.remove('active');
+    document.getElementById('signup-form').style.display = 'block';
+    document.getElementById('login-form').style.display = 'none';
+  });
+
+  document.getElementById('login-form')?.addEventListener('submit', (e) => handleAuth('login', e));
+  document.getElementById('signup-form')?.addEventListener('submit', (e) => handleAuth('register', e));
 
   // COD logic UI
   document.querySelectorAll('input[name="paymentMethod"]').forEach(input => {
@@ -334,7 +446,7 @@ document.addEventListener('DOMContentLoaded', () => {
       } else {
         codRow.style.display = 'none';
       }
-      updateCartUI(); // Refresh totals including possible COD fee
+      updateCartUI();
     });
   });
 

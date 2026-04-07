@@ -294,25 +294,58 @@
         </div>
       </div>
 
+      <!-- Step 2: Login / Register [NEW] -->
+      <div id="cart-step-auth" style="display: none;">
+        <div class="auth-tabs">
+          <button class="auth-tab active" id="tab-login">Login</button>
+          <button class="auth-tab" id="tab-signup">Sign Up</button>
+        </div>
+        
+        <!-- Login Form -->
+        <form id="login-form" class="auth-form">
+          <div class="form-group">
+            <input type="email" id="login-email" placeholder="Email Address" required>
+          </div>
+          <div class="form-group">
+            <input type="password" id="login-pass" placeholder="Password" required>
+          </div>
+          <button type="submit" class="btn" style="width: 100%;">Login to Continue</button>
+        </form>
+
+        <!-- Signup Form -->
+        <form id="signup-form" class="auth-form" style="display: none;">
+          <div class="form-group">
+            <input type="text" id="signup-name" placeholder="Full Name" required minlength="3">
+          </div>
+          <div class="form-group">
+            <input type="email" id="signup-email" placeholder="Email Address" required>
+          </div>
+          <div class="form-group">
+            <input type="password" id="signup-pass" placeholder="Create Password (min 8 characters)" required minlength="8">
+          </div>
+          <button type="submit" class="btn" style="width: 100%;">Create Account</button>
+        </form>
+      </div>
+
       <!-- Step 2: Shipping Form [NEW] -->
       <div id="cart-step-shipping" style="display: none;">
         <h4 style="margin-bottom: 1rem; color: #c08b5c;">Shipping Details</h4>
         <form id="checkout-form" class="checkout-form">
           <div class="form-group">
-            <input type="text" id="ship-name" placeholder="Full Name" required>
+            <input type="text" id="ship-name" placeholder="Full Name" required minlength="3" pattern="^[a-zA-Z\s]+$" title="Please enter a valid name (letters only)">
           </div>
           <div class="form-group">
             <input type="email" id="ship-email" placeholder="Email Address" required>
           </div>
           <div class="form-group">
-            <input type="tel" id="ship-phone" placeholder="Phone Number" required>
+            <input type="tel" id="ship-phone" placeholder="Mobile Number (10 Digits)" required pattern="[6-9][0-9]{9}" title="Please enter a valid 10-digit Indian mobile number starting with 6-9">
           </div>
           <div class="form-group">
             <textarea id="ship-address" placeholder="Full Delivery Address" required></textarea>
           </div>
           <div class="form-row">
-            <input type="text" id="ship-city" placeholder="City" required>
-            <input type="text" id="ship-pincode" placeholder="Pincode" required>
+            <input type="text" id="ship-city" placeholder="City" required minlength="2">
+            <input type="text" id="ship-pincode" placeholder="Pincode (6 Digits)" required pattern="[0-9]{6}" title="Please enter a valid 6-digit pincode">
           </div>
           <div class="form-group">
             <select id="ship-state" required>

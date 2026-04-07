@@ -13,6 +13,36 @@ const signToken = (id) => jwt.sign({ id }, process.env.JWT_SECRET, {
 });
 
 /**
+ * POST /api/auth/register
+ * Public endpoint for new customers
+ */
+router.post('/register', async (req, res, next) => {
+  try {
+    const { name, email, password } = req.body;
+    if (!name || !email || !password) {
+      return res.status(400).json({ error: 'Name, email, and password are required.' });
+    }
+
+    const existingUser = await User.findOne({ where: { email } });
+    if (existingUser) {
+      return res.status(400).json({ error: 'Email already in use.' });
+    }
+
+    // Role defaults to 'customer' as per User model change
+    const user = await User.create({ name, email, password });
+    const token = signToken(user.id);
+
+    res.status(201).json({
+      message: 'Account created successfully!',
+      token,
+      user: { id: user.id, name: user.name, email: user.email, role: user.role },
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+/**
  * POST /api/auth/setup
  * One-time admin account creation
  * Disabled after first admin is created

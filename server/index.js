@@ -1,10 +1,10 @@
 // server/index.js — Veyano Foods Backend Entry Point
 
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
-const path = require('path');
 
 const sequelize = require('./config/db');
 const errorHandler = require('./middleware/errorHandler');
@@ -30,7 +30,17 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // ── Security Middleware ───────────────────────────────────────────────────────
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+      "script-src": ["'self'", "'unsafe-inline'", "https://checkout.razorpay.com"],
+      "frame-src": ["'self'", "https://api.razorpay.com", "https://tds.razorpay.com"],
+      "connect-src": ["'self'", "https://lumberjack.razorpay.com", "https://api.razorpay.com"],
+      "img-src": ["'self'", "data:", "https://*.razorpay.com"],
+    },
+  },
+}));
 app.use(cors({
   origin: process.env.FRONTEND_URL || '*',
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],

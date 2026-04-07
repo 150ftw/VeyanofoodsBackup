@@ -12,6 +12,12 @@ const { deductStock, getNextBatch } = require('../services/fefoService');
 const { generateInvoice } = require('../services/invoiceService');
 const { sendOrderConfirmation, sendCODAdminAlert } = require('../services/emailService');
 const { Op } = require('sequelize');
+const Razorpay = require('razorpay');
+
+const rzp = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
 
 // Order number generator: VFO-YYYY-XXXXX
 async function generateOrderNumber() {
@@ -61,27 +67,39 @@ router.post('/', async (req, res, next) => {
       externalOrderId, notes, razorpayOrderId,
     });
 
-    // For online payments, set total
-    if (paymentMethod === 'razorpay') {
-      orderData.totalAmount = subtotalAmount + gstAmount - discountAmount;
+    // For online payments, create a Razorpay Order
+    let finalRazorpayOrderId = razorpayOrderId;
+    if (paymentMethod === 'razorpay' && !razorpayOrderId) {
+      try {
+        const rzpOrder = await rzp.orders.create({
+          amount: (subtotalAmount + gstAmount - discountAmount) * 100, // amount in paise
+          currency: 'INR',
+          receipt: `rcpt_${Date.now()}`,
+        });
+        finalRazorpayOrderId = rzpOrder.id;
+      } catch (err) {
+        console.error('[Razorpay] Order creation failed:', err.message);
+        return res.status(500).json({ error: 'Failed to initiate online payment.' });
+      }
     }
 
-    // Get FEFO batch for the primary SKU (first item for order-level tracking)
+    // Get FEFO batch for the primary SKU
     let primaryBatch = null;
     try {
       primaryBatch = await getNextBatch(items[0].sku.toUpperCase());
     } catch (e) {
-      // Batch lookup optional — some items may not be tracked
+      // Optional
     }
 
     // Create the order
     const order = await Order.create({
       ...orderData,
+      razorpayOrderId: finalRazorpayOrderId,
       orderNumber: await generateOrderNumber(),
       batchId: primaryBatch?.batchId || null,
     }, { transaction: t });
 
-    // Create order items & deduct FEFO stock
+    // Create order items
     const createdItems = [];
     for (const item of items) {
       const sku = item.sku.toUpperCase();
@@ -141,6 +159,8 @@ router.post('/', async (req, res, next) => {
       totalAmount: order.totalAmount,
       shippingFee: order.shippingFee,
       paymentStatus: order.paymentStatus,
+      razorpayOrderId: order.razorpayOrderId,
+      razorpayKeyId: process.env.RAZORPAY_KEY_ID,
     });
   } catch (err) {
     await t.rollback();

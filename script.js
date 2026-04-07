@@ -33,6 +33,8 @@ const productData = {
   }
 };
 
+const API_BASE_URL = 'http://localhost:3001';
+
 // Cart State Management
 let cart = JSON.parse(localStorage.getItem('veyano_cart')) || [];
 
@@ -85,8 +87,10 @@ function updateCartUI() {
     cartItemsContainer.appendChild(itemEl);
   });
 
+  const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked')?.value;
   const deliveryFee = subtotal >= 499 ? 0 : 50;
-  const total = subtotal + deliveryFee;
+  const codFee = paymentMethod === 'cod' ? 99 : 0;
+  const total = subtotal + deliveryFee + codFee;
 
   if(subtotalEl) subtotalEl.textContent = `₹${subtotal}`;
   if(deliveryEl) deliveryEl.textContent = subtotal >= 499 ? 'FREE' : `₹${deliveryFee}`;
@@ -132,45 +136,127 @@ function toggleCart(open) {
   } else {
     drawer.classList.remove('open');
     overlay.classList.remove('open');
+    // Reset to step 1 when closing
+    goToStep(1);
   }
 }
 
-// Razorpay Integration
-function setupRazorpay() {
-  const checkoutBtn = document.getElementById('checkout-btn');
-  if(!checkoutBtn) return;
+// Checkout Step Navigation
+function goToStep(step) {
+  const step1 = document.getElementById('cart-step-items');
+  const step2 = document.getElementById('cart-step-shipping');
+  const step3 = document.getElementById('cart-step-success');
+  const nextBtn = document.getElementById('next-step-btn');
+  const actions = document.getElementById('checkout-actions');
+  const summary = document.getElementById('summary-section');
 
-  checkoutBtn.addEventListener('click', () => {
-    if (cart.length === 0) return alert("Your cart is empty!");
+  if (step === 1) {
+    step1.style.display = 'block';
+    step2.style.display = 'none';
+    step3.style.display = 'none';
+    nextBtn.style.display = 'block';
+    actions.style.display = 'none';
+    summary.style.display = 'block';
+  } else if (step === 2) {
+    step1.style.display = 'none';
+    step2.style.display = 'block';
+    step3.style.display = 'none';
+    nextBtn.style.display = 'none';
+    actions.style.display = 'flex';
+    summary.style.display = 'block';
+  } else if (step === 3) {
+    step1.style.display = 'none';
+    step2.style.display = 'none';
+    step3.style.display = 'block';
+    nextBtn.style.display = 'none';
+    actions.style.display = 'none';
+    summary.style.display = 'none';
+  }
+}
 
-    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const deliveryFee = subtotal >= 499 ? 0 : 50;
-    const totalAmount = (subtotal + deliveryFee) * 100; // Amount in paise
+// Backend API Integration
+async function placeOrder() {
+  const form = document.getElementById('checkout-form');
+  if (!form.checkValidity()) {
+    return form.reportValidity();
+  }
 
-    const options = {
-      "key": "rzp_test_placeholder", // Replace with actual Key ID
-      "amount": totalAmount,
-      "currency": "INR",
-      "name": "Veyano Foods",
-      "description": "Premium Roasted Makhana Order",
-      "handler": function (response){
-          alert("Payment Successful! ID: " + response.razorpay_payment_id);
-          cart = [];
-          saveCart();
-          toggleCart(false);
-      },
-      "prefill": {
-          "name": "Customer Name",
-          "email": "customer@example.com",
-          "contact": "9999999999"
-      },
-      "theme": {
-          "color": "#c08b5c"
-      }
-    };
-    const rzp1 = new window.Razorpay(options);
-    rzp1.open();
-  });
+  const placeBtn = document.getElementById('place-order-btn');
+  placeBtn.disabled = true;
+  placeBtn.textContent = 'Processing...';
+
+  const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+  const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  
+  const orderData = {
+    customerName: document.getElementById('ship-name').value,
+    customerEmail: document.getElementById('ship-email').value,
+    customerPhone: document.getElementById('ship-phone').value,
+    shippingAddress: document.getElementById('ship-address').value,
+    shippingCity: document.getElementById('ship-city').value,
+    shippingState: document.getElementById('ship-state').value,
+    shippingPincode: document.getElementById('ship-pincode').value,
+    paymentMethod: paymentMethod,
+    items: cart.map(item => ({
+      sku: item.id,
+      productName: item.title,
+      quantity: item.quantity,
+      unitPrice: item.price
+    }))
+  };
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/orders`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(orderData)
+    });
+
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || 'Failed to place order');
+
+    if (paymentMethod === 'cod') {
+      showSuccess(result.orderNumber);
+    } else {
+      // Razorpay Flow
+      initiateRazorpay(result);
+    }
+  } catch (err) {
+    alert(err.message);
+  } finally {
+    placeBtn.disabled = false;
+    placeBtn.textContent = 'Place Order';
+  }
+}
+
+function initiateRazorpay(orderResult) {
+  const options = {
+    "key": "rzp_test_placeholder", // Will be replaced by backend key if implemented
+    "amount": orderResult.totalAmount * 100,
+    "currency": "INR",
+    "name": "Veyano Foods",
+    "description": "Order #" + orderResult.orderNumber,
+    "order_id": orderResult.razorpayOrderId,
+    "handler": function (response) {
+      // Typically we'd verify on backend here, but for now we show success
+      showSuccess(orderResult.orderNumber);
+    },
+    "prefill": {
+      "name": document.getElementById('ship-name').value,
+      "email": document.getElementById('ship-email').value,
+      "contact": document.getElementById('ship-phone').value
+    },
+    "theme": { "color": "#c08b5c" }
+  };
+  const rzp = new window.Razorpay(options);
+  rzp.open();
+}
+
+function showSuccess(orderNumber) {
+  document.getElementById('order-number-display').textContent = `Order #${orderNumber}`;
+  goToStep(3);
+  cart = [];
+  saveCart();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -216,7 +302,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const v = e.target.dataset.variant;
         variant = v;
         updatePageContent(v);
-        // update URL
         const newurl = window.location.pathname + '?variant=' + v;
         window.history.replaceState({path:newurl},'',newurl);
       });
@@ -227,15 +312,31 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Global listeners for Homepage "View Details" logic or direct add
-  // Currently "View Details" links to product page, but we could add direct "Add to cart" buttons
-  // Using querySelectorAll to find all product card links and potentially hijacking them or adding direct buttons
-  
-  // Cart toggle listeners
+  // Cart Listeners
   document.getElementById('cart-icon-btn')?.addEventListener('click', () => toggleCart(true));
   document.getElementById('close-cart-btn')?.addEventListener('click', () => toggleCart(false));
   document.getElementById('cart-overlay')?.addEventListener('click', () => toggleCart(false));
 
-  setupRazorpay();
+  // Checkout Step Listeners
+  document.getElementById('next-step-btn')?.addEventListener('click', () => {
+    if (cart.length === 0) return alert("Your cart is empty!");
+    goToStep(2);
+  });
+  document.getElementById('back-to-cart-btn')?.addEventListener('click', () => goToStep(1));
+  document.getElementById('place-order-btn')?.addEventListener('click', placeOrder);
+
+  // COD logic UI
+  document.querySelectorAll('input[name="paymentMethod"]').forEach(input => {
+    input.addEventListener('change', (e) => {
+      const codRow = document.getElementById('cod-fee-row');
+      if (e.target.value === 'cod') {
+        codRow.style.display = 'flex';
+      } else {
+        codRow.style.display = 'none';
+      }
+      updateCartUI(); // Refresh totals including possible COD fee
+    });
+  });
+
   updateCartUI();
 });

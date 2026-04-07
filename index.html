@@ -286,24 +286,92 @@
       <h3>Your Cart</h3>
       <button class="close-cart" id="close-cart-btn">&times;</button>
     </div>
-    <div class="cart-body" id="cart-items-container">
-      <!-- Items dynamically injected here -->
-      <div class="cart-empty">Your cart is empty.</div>
+    <div class="cart-body" id="cart-drawer-body">
+      <!-- Step 1: Cart Items -->
+      <div id="cart-step-items">
+        <div id="cart-items-container">
+          <div class="cart-empty">Your cart is empty.</div>
+        </div>
+      </div>
+
+      <!-- Step 2: Shipping Form [NEW] -->
+      <div id="cart-step-shipping" style="display: none;">
+        <h4 style="margin-bottom: 1rem; color: #c08b5c;">Shipping Details</h4>
+        <form id="checkout-form" class="checkout-form">
+          <div class="form-group">
+            <input type="text" id="ship-name" placeholder="Full Name" required>
+          </div>
+          <div class="form-group">
+            <input type="email" id="ship-email" placeholder="Email Address" required>
+          </div>
+          <div class="form-group">
+            <input type="tel" id="ship-phone" placeholder="Phone Number" required>
+          </div>
+          <div class="form-group">
+            <textarea id="ship-address" placeholder="Full Delivery Address" required></textarea>
+          </div>
+          <div class="form-row">
+            <input type="text" id="ship-city" placeholder="City" required>
+            <input type="text" id="ship-pincode" placeholder="Pincode" required>
+          </div>
+          <div class="form-group">
+            <select id="ship-state" required>
+              <option value="" disabled selected>Select State</option>
+              <option value="Delhi">Delhi</option>
+              <option value="Maharashtra">Maharashtra</option>
+              <option value="Karnataka">Karnataka</option>
+              <option value="Haryana">Haryana</option>
+              <!-- More states added via script -->
+            </select>
+          </div>
+          
+          <h4 style="margin: 1.5rem 0 1rem; color: #c08b5c;">Payment Method</h4>
+          <div class="payment-methods">
+            <label class="payment-option">
+              <input type="radio" name="paymentMethod" value="razorpay" checked>
+              <span>Pay Online (Razorpay)</span>
+            </label>
+            <label class="payment-option">
+              <input type="radio" name="paymentMethod" value="cod">
+              <span>Cash on Delivery (₹99 Extra)</span>
+            </label>
+          </div>
+        </form>
+      </div>
+
+      <!-- Step 3: Success Screen [NEW] -->
+      <div id="cart-step-success" style="display: none; text-align: center; padding: 2rem 0;">
+        <svg viewBox="0 0 24 24" width="64" height="64" fill="#4caf50" style="margin-bottom: 1rem;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+        <h3>Order Placed!</h3>
+        <p id="order-number-display" style="color: #666; margin: 1rem 0;">Order #VFO-2024-00001</p>
+        <p style="font-size: 0.9rem;">Check your email for the GST invoice and confirmation.</p>
+        <button class="btn btn-outline" style="margin-top: 2rem;" onclick="location.reload()">Continue Shopping</button>
+      </div>
     </div>
     <div class="cart-footer" id="cart-footer">
-      <div class="cart-summary-row">
-        <span>Subtotal</span>
-        <span id="cart-subtotal">₹0</span>
+      <div id="summary-section">
+        <div class="cart-summary-row">
+          <span>Subtotal</span>
+          <span id="cart-subtotal">₹0</span>
+        </div>
+        <div class="cart-summary-row" id="cod-fee-row" style="display: none;">
+          <span>COD Handling Fee</span>
+          <span>₹99</span>
+        </div>
+        <div class="cart-summary-row">
+          <span>Delivery</span>
+          <span id="cart-delivery">₹0</span>
+        </div>
+        <div class="cart-summary-total">
+          <span>Total</span>
+          <span id="cart-total">₹0</span>
+        </div>
       </div>
-      <div class="cart-summary-row">
-        <span>Delivery</span>
-        <span id="cart-delivery">₹0</span>
+      <button class="btn" id="next-step-btn" style="width: 100%;">Proceed to Shipping</button>
+      <div id="checkout-actions" style="display: none; gap:10px;">
+        <button class="btn btn-outline" id="back-to-cart-btn" style="flex: 1;">Back</button>
+        <button class="btn" id="place-order-btn" style="flex: 2;">Place Order</button>
       </div>
-      <div class="cart-summary-total">
-        <span>Total</span>
-        <span id="cart-total">₹0</span>
-      </div>
-      <button class="btn" id="checkout-btn" style="width: 100%;">Checkout with Razorpay</button>
     </div>
   </div>
 

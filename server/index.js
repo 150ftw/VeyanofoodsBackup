@@ -62,6 +62,9 @@ app.use('/api/orders', ordersRoutes);
 app.use('/api/logistics', logisticsRoutes);
 app.use('/api/compliance', complianceRoutes);
 
+// Serve frontend static files (from the root directory)
+app.use(express.static(path.join(__dirname, '../')));
+
 // Serve generated invoices (authenticated access only via /api/compliance/invoice/:id)
 app.use('/invoices', express.static(path.join(__dirname, 'invoices')));
 

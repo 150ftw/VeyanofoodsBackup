@@ -33,7 +33,7 @@ const productData = {
   }
 };
 
-const API_BASE_URL = 'http://localhost:3001';
+const API_BASE_URL = '';
 
 // Cart State Management
 let cart = JSON.parse(localStorage.getItem('veyano_cart')) || [];

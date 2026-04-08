@@ -10,7 +10,7 @@ async function seed() {
     { sku: 'PLAIN', product_name: 'Classic Plain Makhana', price_paise: 39900, stock_quantity: 200, details: 'Premium Grade Fox Nuts (Makhana).' },
     { sku: 'SALTED', product_name: 'Lightly Salted Makhana', price_paise: 39900, stock_quantity: 200, details: 'Premium Grade Fox Nuts (Makhana), Himalayan Pink Salt, Rice Bran Oil.' },
     { sku: 'PERIPERI', product_name: 'Fiery Peri-Peri Makhana', price_paise: 39900, stock_quantity: 200, details: 'Premium Grade Fox Nuts (Makhana), Peri-Peri Spice Blend, Rice Bran Oil.' },
-    { sku: 'COMBO', product_name: 'The Ultimate Combo Pack', price_paise: 89900, stock_quantity: 200, details: 'Contains Plain, Salted, and Peri-Peri 200g Packs.' }
+    { sku: 'COMBO', product_name: 'The Ultimate Combo Pack', price_paise: 39900, stock_quantity: 200, details: 'Contains Plain, Salted, and Peri-Peri 200g Packs.' }
   ];
 
   const { error: pError } = await supabase.from('products').upsert(products, { onConflict: 'sku' });

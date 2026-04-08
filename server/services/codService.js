@@ -2,7 +2,7 @@
 // COD (Cash on Delivery) Logic Module
 // Automatically flags COD orders, adds ₹99 surcharge, queues phone confirmation
 
-const COD_SURCHARGE = 99; // ₹
+const COD_SURCHARGE = 79; // ₹
 
 /**
  * Apply COD rules to an incoming order payload
@@ -10,16 +10,18 @@ const COD_SURCHARGE = 99; // ₹
  * @returns {object} Modified order with COD surcharge and flags
  */
 function applyCODLogic(orderData) {
+  const baseDeliveryFee = orderData.subtotalAmount >= 499 ? 0 : 50;
+
   if (orderData.paymentMethod !== 'cod') {
     return {
       ...orderData,
       isCOD: false,
       codFlagConfirmed: false,
-      shippingFee: orderData.subtotalAmount >= 499 ? 0 : 50,
+      shippingFee: baseDeliveryFee,
     };
   }
 
-  const shippingFee = COD_SURCHARGE; // COD always pays ₹99
+  const shippingFee = baseDeliveryFee + COD_SURCHARGE; 
   const totalAmount = orderData.subtotalAmount + shippingFee - (orderData.discountAmount || 0);
 
   return {

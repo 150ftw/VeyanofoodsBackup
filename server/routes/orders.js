@@ -83,7 +83,8 @@ router.post('/', async (req, res, next) => {
 
     const createdItems = [];
     for (const item of items) {
-      const sku = item.sku.toUpperCase();
+      // Robust SKU resolution
+      const sku = (item.sku || item.id || 'UNKNOWN').toUpperCase();
       
       try {
         await deductStock(sku, item.quantity);

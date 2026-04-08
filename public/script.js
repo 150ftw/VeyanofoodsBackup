@@ -106,10 +106,10 @@ function updateCartUI() {
   
   if (codSummaryRow && codSummaryDisplay) {
     if (codFee > 0) {
-      codSummaryRow.style.setProperty('display', 'flex', 'important');
+      codSummaryRow.style.display = 'flex';
       codSummaryDisplay.textContent = `₹${codFee}`;
     } else {
-      codSummaryRow.style.setProperty('display', 'none', 'important');
+      codSummaryRow.style.display = 'none';
     }
   }
 

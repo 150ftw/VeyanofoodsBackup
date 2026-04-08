@@ -567,7 +567,7 @@ a {
   background: #fff;
   z-index: 1000;
   box-shadow: -10px 0 30px rgba(0,0,0,0.1);
-  transition: right 0.25s cubic-bezier(0.2, 0, 0, 1);
+  transition: right 0.2s cubic-bezier(0, 0, 0.2, 1);
   display: flex;
   flex-direction: column;
 }
@@ -585,7 +585,7 @@ a {
   z-index: 999;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.2s ease, visibility 0.2s ease;
+  transition: opacity 0.15s ease, visibility 0.15s ease;
 }
 .cart-overlay.open {
   opacity: 1;

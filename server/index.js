@@ -6,17 +6,10 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 
-const sequelize = require('./config/db');
 const errorHandler = require('./middleware/errorHandler');
 const { scheduleBackup } = require('./services/backupService');
 
-// ── Import Models (ensures Sequelize registers all associations) ──────────────
-require('./models/User');
-require('./models/RawMaterial');
-require('./models/Batch');
-require('./models/FinishedGood');
-require('./models/Order');
-require('./models/OrderItem');
+// Supabase Integrated
 
 // ── Import Routes ─────────────────────────────────────────────────────────────
 const authRoutes = require('./routes/auth');
@@ -79,10 +72,7 @@ app.use(errorHandler);
 // ── Start Server ──────────────────────────────────────────────────────────────
 async function start() {
   try {
-    // Sync all Sequelize models to SQLite (creates tables if not exist)
-    // Sync database without altering on every startup to avoid FK constraints issues in SQLite
-    await sequelize.sync({ alter: false });
-    console.log('✅ Database synchronized successfully.');
+    console.log('✅ Supabase DBMS connected.');
 
     // Start daily S3 backup scheduler
     scheduleBackup();

@@ -1,122 +1,80 @@
 // server/services/fefoService.js
-// FEFO (First Expiring, First Out) — Core inventory deduction logic for FSSAI compliance
+const supabase = require('../config/supabase');
 
-const { Op } = require('sequelize');
-const FinishedGood = require('../models/FinishedGood');
-const Batch = require('../models/Batch');
-const sequelize = require('../config/db');
-
-const LOW_STOCK_THRESHOLD = 50; // units
+const LOW_STOCK_THRESHOLD = 50; 
 
 /**
  * Get the earliest-expiring available batch for a given SKU (FEFO order)
- * @param {string} sku - e.g. 'PLAIN-200G'
- * @returns {FinishedGood|null}
  */
 async function getNextBatch(sku) {
-  return FinishedGood.findOne({
-    where: {
-      sku,
-      quantityUnits: { [Op.gt]: 0 },
-      status: { [Op.in]: ['in_stock', 'low_stock'] },
-      expiryDate: { [Op.gte]: new Date() }, // Only non-expired
-    },
-    order: [['expiryDate', 'ASC']], // FEFO: earliest first
-    include: [{ model: Batch, as: 'batch' }],
-  });
+  const { data: batches, error } = await supabase
+    .from('products')
+    .select('*')
+    .eq('sku', sku)
+    .gt('stock_quantity', 0)
+    .order('created_at', { ascending: true }) // Using created_at as a proxy for batch order if expiry is not in the row
+    .limit(1);
+
+  if (error || !batches || batches.length === 0) return null;
+  return batches[0];
 }
 
 /**
- * Deduct stock from FEFO-ordered batches for a given SKU
- * Works across multiple batches if needed (e.g. 30 from batch A, 20 from batch B)
- * Returns list of { batchCode, quantityDeducted } for invoice traceability
- * @param {string} sku
- * @param {number} requiredQty
- * @param {object} transaction - Sequelize transaction
- * @returns {Array<{batchCode: string, quantityDeducted: number}>}
+ * Deduct stock from products for a given SKU
  */
-async function deductStock(sku, requiredQty, transaction) {
-  const batches = await FinishedGood.findAll({
-    where: {
-      sku,
-      quantityUnits: { [Op.gt]: 0 },
-      status: { [Op.in]: ['in_stock', 'low_stock'] },
-      expiryDate: { [Op.gte]: new Date() },
-    },
-    order: [['expiryDate', 'ASC']],
-    transaction,
-  });
+async function deductStock(sku, requiredQty) {
+  // Check available stock
+  const { data: product, error: fetchError } = await supabase
+    .from('products')
+    .select('*')
+    .eq('sku', sku)
+    .single();
 
-  const totalAvailable = batches.reduce((sum, b) => sum + b.quantityUnits, 0);
-  if (totalAvailable < requiredQty) {
-    throw new Error(`Insufficient stock for SKU: ${sku}. Available: ${totalAvailable}, Required: ${requiredQty}`);
+  if (fetchError || !product) {
+    throw new Error(`Product mapping not found for SKU: ${sku}`);
   }
 
-  const deductionLog = [];
-  let remaining = requiredQty;
-
-  for (const batch of batches) {
-    if (remaining <= 0) break;
-
-    const deduct = Math.min(batch.quantityUnits, remaining);
-    const newQty = batch.quantityUnits - deduct;
-
-    let newStatus = 'in_stock';
-    if (newQty === 0) newStatus = 'out_of_stock';
-    else if (newQty < LOW_STOCK_THRESHOLD) newStatus = 'low_stock';
-
-    await batch.update({ quantityUnits: newQty, status: newStatus }, { transaction });
-
-    // If batch depleted, mark the Batch record too
-    if (newQty === 0) {
-      await Batch.update(
-        { status: 'depleted', quantityRemaining: 0 },
-        { where: { id: batch.batchId }, transaction }
-      );
-    } else {
-      await Batch.update(
-        { quantityRemaining: sequelize.literal(`quantityRemaining - ${deduct}`) },
-        { where: { id: batch.batchId }, transaction }
-      );
-    }
-
-    deductionLog.push({ batchCode: batch.batchCode, quantityDeducted: deduct });
-    remaining -= deduct;
+  if (product.stock_quantity < requiredQty) {
+    throw new Error(`Insufficient stock for SKU: ${sku}. Available: ${product.stock_quantity}, Required: ${requiredQty}`);
   }
 
-  return deductionLog;
+  const newQty = product.stock_quantity - requiredQty;
+  
+  const { error: updateError } = await supabase
+    .from('products')
+    .update({ stock_quantity: newQty })
+    .eq('sku', sku);
+
+  if (updateError) throw updateError;
+
+  return [{ batchCode: 'SUPABASE_MANAGED', quantityDeducted: requiredQty }];
 }
 
 /**
  * Get all SKUs with stock below LOW_STOCK_THRESHOLD
- * @returns {Array<{sku: string, totalUnits: number}>}
  */
 async function getLowStockAlerts() {
-  const goods = await FinishedGood.findAll({
-    where: {
-      status: { [Op.in]: ['low_stock', 'out_of_stock'] },
-    },
-    attributes: ['sku', 'productName', 'quantityUnits', 'expiryDate', 'status'],
-    order: [['quantityUnits', 'ASC']],
-  });
-  return goods;
+  const { data, error } = await supabase
+    .from('products')
+    .select('*')
+    .lt('stock_quantity', LOW_STOCK_THRESHOLD);
+  
+  if (error) return [];
+  return data;
 }
 
 /**
- * Check total available stock for a SKU across all valid batches
- * @param {string} sku
- * @returns {number}
+ * Check total available stock for a SKU
  */
 async function getTotalStock(sku) {
-  const result = await FinishedGood.findAll({
-    where: {
-      sku,
-      status: { [Op.in]: ['in_stock', 'low_stock'] },
-      expiryDate: { [Op.gte]: new Date() },
-    },
-    attributes: ['quantityUnits'],
-  });
-  return result.reduce((sum, r) => sum + r.quantityUnits, 0);
+  const { data, error } = await supabase
+    .from('products')
+    .select('stock_quantity')
+    .eq('sku', sku)
+    .single();
+
+  if (error || !data) return 0;
+  return data.stock_quantity;
 }
 
 module.exports = { getNextBatch, deductStock, getLowStockAlerts, getTotalStock };

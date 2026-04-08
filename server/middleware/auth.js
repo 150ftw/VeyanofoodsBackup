@@ -1,7 +1,7 @@
 // server/middleware/auth.js — JWT authentication guard middleware
 
 const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+const supabase = require('../config/supabase');
 require('dotenv').config();
 
 module.exports = async (req, res, next) => {
@@ -15,9 +15,14 @@ module.exports = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findByPk(decoded.id);
+    
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', decoded.id)
+      .single();
 
-    if (!user || !user.isActive) {
+    if (error || !user || !user.is_active) {
       return res.status(401).json({ error: 'User account not found or deactivated.' });
     }
 

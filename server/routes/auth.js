@@ -2,8 +2,8 @@
 
 const express = require('express');
 const jwt = require('jsonwebtoken');
-const User = require('../models/User');
-const { Op } = require('sequelize');
+const supabase = require('../config/supabase');
+const bcrypt = require('bcryptjs');
 const authMiddleware = require('../middleware/auth');
 require('dotenv').config();
 
@@ -15,7 +15,6 @@ const signToken = (id) => jwt.sign({ id }, process.env.JWT_SECRET, {
 
 /**
  * POST /api/auth/register
- * Public endpoint for new customers
  */
 router.post('/register', async (req, res, next) => {
   try {
@@ -24,19 +23,27 @@ router.post('/register', async (req, res, next) => {
       return res.status(400).json({ error: 'Name, email, mobile number, and password are required.' });
     }
 
-    const existingUser = await User.findOne({ 
-      where: { 
-        [Op.or]: [{ email }, { phone }] 
-      } 
-    });
-    
-    if (existingUser) {
-      const field = existingUser.email === email ? 'Email' : 'Mobile number';
+    // Check if user exists
+    const { data: existingUser, error: checkError } = await supabase
+      .from('users')
+      .select('email, phone')
+      .or(`email.eq.${email},phone.eq.${phone}`)
+      .limit(1);
+
+    if (existingUser && existingUser.length > 0) {
+      const field = existingUser[0].email === email ? 'Email' : 'Mobile number';
       return res.status(400).json({ error: `${field} already in use.` });
     }
 
-    // Role defaults to 'customer' as per User model change
-    const user = await User.create({ name, email, phone, password });
+    const hashedPassword = await bcrypt.hash(password, 12);
+    const { data: user, error: createError } = await supabase
+      .from('users')
+      .insert([{ name, email, phone, password: hashedPassword, role: 'customer' }])
+      .select()
+      .single();
+
+    if (createError) throw createError;
+
     const token = signToken(user.id);
 
     res.status(201).json({
@@ -50,41 +57,7 @@ router.post('/register', async (req, res, next) => {
 });
 
 /**
- * POST /api/auth/setup
- * One-time admin account creation
- * Disabled after first admin is created
- */
-router.post('/setup', async (req, res, next) => {
-  try {
-    const existingAdmin = await User.findOne({ where: { role: 'admin' } });
-    if (existingAdmin) {
-      return res.status(403).json({ error: 'Admin account already exists. Use /login endpoint.' });
-    }
-
-    const { name, email, password } = req.body;
-    if (!name || !email || !password) {
-      return res.status(400).json({ error: 'Name, email, and password are required.' });
-    }
-    if (password.length < 8) {
-      return res.status(400).json({ error: 'Password must be at least 8 characters.' });
-    }
-
-    const user = await User.create({ name, email, password, role: 'admin' });
-    const token = signToken(user.id);
-
-    res.status(201).json({
-      message: 'Admin account created successfully! Keep your credentials safe.',
-      token,
-      user: { id: user.id, name: user.name, email: user.email, role: user.role },
-    });
-  } catch (err) {
-    next(err);
-  }
-});
-
-/**
  * POST /api/auth/login
- * Returns JWT token on success
  */
 router.post('/login', async (req, res, next) => {
   try {
@@ -93,12 +66,17 @@ router.post('/login', async (req, res, next) => {
       return res.status(400).json({ error: 'Email and password are required.' });
     }
 
-    const user = await User.findOne({ where: { email } });
-    if (!user || !user.isActive) {
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('email', email)
+      .single();
+
+    if (error || !user || !user.is_active) {
       return res.status(401).json({ error: 'Invalid email or password.' });
     }
 
-    const isValid = await user.validatePassword(password);
+    const isValid = await bcrypt.compare(password, user.password);
     if (!isValid) {
       return res.status(401).json({ error: 'Invalid email or password.' });
     }
@@ -115,7 +93,7 @@ router.post('/login', async (req, res, next) => {
 });
 
 /**
- * GET /api/auth/me — Get current user info (protected)
+ * GET /api/auth/me
  */
 router.get('/me', authMiddleware, (req, res) => {
   res.json({

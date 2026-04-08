@@ -87,22 +87,41 @@ function updateCartUI() {
     cartItemsContainer.appendChild(itemEl);
   });
 
-  const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked')?.value;
-  const deliveryFee = subtotal >= 499 ? 0 : 50;
-  const codFee = paymentMethod === 'cod' ? 99 : 0;
-  const total = subtotal + deliveryFee + codFee;
+  // Calculate Fees
+  const subtotalVal = subtotal;
+  const deliveryFee = subtotalVal >= 499 ? 0 : 50;
+  
+  const paymentInput = document.querySelector('input[name="paymentMethod"]:checked');
+  const paymentMethod = paymentInput ? paymentInput.value : 'cod'; 
+  const codFee = paymentMethod === 'cod' ? 79 : 0;
+  
+  const total = subtotalVal + deliveryFee + codFee;
 
-  if(subtotalEl) subtotalEl.textContent = `₹${subtotal}`;
-  if(deliveryEl) deliveryEl.textContent = subtotal >= 499 ? 'FREE' : `₹${deliveryFee}`;
+  // Update Display
+  if(subtotalEl) subtotalEl.textContent = `₹${subtotalVal}`;
+  if(deliveryEl) deliveryEl.textContent = subtotalVal >= 499 ? 'FREE' : `₹${deliveryFee}`;
+  
+  const codSummaryRow = document.getElementById('cod-fee-row-summary');
+  const codSummaryDisplay = document.getElementById('cart-cod-fee');
+  
+  if (codSummaryRow && codSummaryDisplay) {
+    if (codFee > 0) {
+      codSummaryRow.style.setProperty('display', 'flex', 'important');
+      codSummaryDisplay.textContent = `₹${codFee}`;
+    } else {
+      codSummaryRow.style.setProperty('display', 'none', 'important');
+    }
+  }
+
   if(totalEl) totalEl.textContent = `₹${total}`;
 }
 
 window.updateQty = (id, delta) => {
-  const item = cart.find(i => i.id === id);
-  if (item) {
-    item.quantity += delta;
-    if (item.quantity <= 0) {
-      cart = cart.filter(i => i.id !== id);
+  const itemIndex = cart.findIndex(i => i.id === id);
+  if (itemIndex !== -1) {
+    cart[itemIndex].quantity += delta;
+    if (cart[itemIndex].quantity <= 0) {
+      cart.splice(itemIndex, 1);
     }
     saveCart();
   }

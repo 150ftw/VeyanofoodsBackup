@@ -12,12 +12,6 @@ const { deductStock, getNextBatch } = require('../services/fefoService');
 const { generateInvoice } = require('../services/invoiceService');
 const { sendOrderConfirmation, sendCODAdminAlert } = require('../services/emailService');
 const { Op } = require('sequelize');
-const Razorpay = require('razorpay');
-
-const rzp = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
-});
 
 // Order number generator: VFO-YYYY-XXXXX
 async function generateOrderNumber() {
@@ -67,21 +61,7 @@ router.post('/', async (req, res, next) => {
       externalOrderId, notes, razorpayOrderId,
     });
 
-    // For online payments, create a Razorpay Order
-    let finalRazorpayOrderId = razorpayOrderId;
-    if (paymentMethod === 'razorpay' && !razorpayOrderId) {
-      try {
-        const rzpOrder = await rzp.orders.create({
-          amount: (subtotalAmount + gstAmount - discountAmount) * 100, // amount in paise
-          currency: 'INR',
-          receipt: `rcpt_${Date.now()}`,
-        });
-        finalRazorpayOrderId = rzpOrder.id;
-      } catch (err) {
-        console.error('[Razorpay] Order creation failed:', err.message);
-        return res.status(500).json({ error: 'Failed to initiate online payment.' });
-      }
-    }
+    const finalRazorpayOrderId = null;
 
     // Get FEFO batch for the primary SKU
     let primaryBatch = null;
@@ -159,8 +139,6 @@ router.post('/', async (req, res, next) => {
       totalAmount: order.totalAmount,
       shippingFee: order.shippingFee,
       paymentStatus: order.paymentStatus,
-      razorpayOrderId: order.razorpayOrderId,
-      razorpayKeyId: process.env.RAZORPAY_KEY_ID,
     });
   } catch (err) {
     await t.rollback();

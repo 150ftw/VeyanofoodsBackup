@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node server/index.js",
     "dev": "nodemon server/index.js",
+    "seed": "node server/seed.js",
     "build": "echo 'Build complete'"
   },
   "dependencies": {
@@ -19,7 +20,6 @@
     "nodemailer": "^6.9.13",
     "node-cron": "^3.0.3",
     "pdfkit": "^0.15.0",
-    "razorpay": "^2.9.2",
     "sequelize": "^6.37.3",
     "sqlite3": "^5.1.7",
     "uuid": "^10.0.0",

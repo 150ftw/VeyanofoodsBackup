@@ -3,6 +3,7 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const { Op } = require('sequelize');
 const authMiddleware = require('../middleware/auth');
 require('dotenv').config();
 
@@ -18,18 +19,24 @@ const signToken = (id) => jwt.sign({ id }, process.env.JWT_SECRET, {
  */
 router.post('/register', async (req, res, next) => {
   try {
-    const { name, email, password } = req.body;
-    if (!name || !email || !password) {
-      return res.status(400).json({ error: 'Name, email, and password are required.' });
+    const { name, email, phone, password } = req.body;
+    if (!name || !email || !phone || !password) {
+      return res.status(400).json({ error: 'Name, email, mobile number, and password are required.' });
     }
 
-    const existingUser = await User.findOne({ where: { email } });
+    const existingUser = await User.findOne({ 
+      where: { 
+        [Op.or]: [{ email }, { phone }] 
+      } 
+    });
+    
     if (existingUser) {
-      return res.status(400).json({ error: 'Email already in use.' });
+      const field = existingUser.email === email ? 'Email' : 'Mobile number';
+      return res.status(400).json({ error: `${field} already in use.` });
     }
 
     // Role defaults to 'customer' as per User model change
-    const user = await User.create({ name, email, password });
+    const user = await User.create({ name, email, phone, password });
     const token = signToken(user.id);
 
     res.status(201).json({

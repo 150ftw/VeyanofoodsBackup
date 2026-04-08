@@ -567,7 +567,7 @@ a {
   background: #fff;
   z-index: 1000;
   box-shadow: -10px 0 30px rgba(0,0,0,0.1);
-  transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: right 0.25s cubic-bezier(0.2, 0, 0, 1);
   display: flex;
   flex-direction: column;
 }
@@ -585,7 +585,7 @@ a {
   z-index: 999;
   opacity: 0;
   visibility: hidden;
-  transition: all 0.3s ease;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
 }
 .cart-overlay.open {
   opacity: 1;
@@ -698,6 +698,28 @@ a {
   font-family: inherit;
   font-size: 0.9rem;
   transition: border-color 0.3s ease;
+}
+.password-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.password-group input {
+  padding-right: 40px; /* Space for the eye icon */
+  width: 100%;
+}
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  cursor: pointer;
+  color: #888;
+  display: flex;
+  align-items: center;
+  user-select: none;
+  transition: color 0.2s;
+}
+.password-toggle:hover {
+  color: var(--primary-color);
 }
 .form-group textarea {
   min-height: 80px;

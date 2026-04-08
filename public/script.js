@@ -228,8 +228,16 @@ async function handleAuth(type, e) {
   submitBtn.textContent = 'Please wait...';
 
   const data = type === 'login' 
-    ? { email: form[0].value, password: form[1].value }
-    : { name: form[0].value, email: form[1].value, password: form[2].value };
+    ? { 
+        email: document.getElementById('login-email').value, 
+        password: document.getElementById('login-pass').value 
+      }
+    : { 
+        name: document.getElementById('signup-name').value, 
+        email: document.getElementById('signup-email').value, 
+        phone: document.getElementById('signup-phone').value,
+        password: document.getElementById('signup-pass').value 
+      };
 
   try {
     const response = await fetch(`${API_BASE_URL}/api/auth/${type}`, {
@@ -302,11 +310,7 @@ async function placeOrder() {
     const result = await response.json();
     if (!response.ok) throw new Error(result.error || 'Failed to place order');
 
-    if (paymentMethod === 'cod') {
-      showSuccess(result.orderNumber);
-    } else {
-      initiateRazorpay(result);
-    }
+    showSuccess(result.orderNumber);
   } catch (err) {
     alert(err.message);
   } finally {
@@ -315,27 +319,6 @@ async function placeOrder() {
   }
 }
 
-function initiateRazorpay(orderResult) {
-  const options = {
-    "key": orderResult.razorpayKeyId,
-    "amount": orderResult.totalAmount * 100,
-    "currency": "INR",
-    "name": "Veyano Foods",
-    "description": "Order #" + orderResult.orderNumber,
-    "order_id": orderResult.razorpayOrderId,
-    "handler": function (response) {
-      showSuccess(orderResult.orderNumber);
-    },
-    "prefill": {
-      "name": document.getElementById('ship-name').value,
-      "email": document.getElementById('ship-email').value,
-      "contact": document.getElementById('ship-phone').value
-    },
-    "theme": { "color": "#c08b5c" }
-  };
-  const rzp = new window.Razorpay(options);
-  rzp.open();
-}
 
 function showSuccess(orderNumber) {
   const display = document.getElementById('order-number-display');
@@ -395,10 +378,17 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('add-to-cart-btn')?.addEventListener('click', () => {
         window.addToCart(variant);
     });
+    document.getElementById('view-cart-btn')?.addEventListener('click', () => {
+        toggleCart(true);
+    });
   }
 
   // Cart Listeners
   document.getElementById('cart-icon-btn')?.addEventListener('click', () => toggleCart(true));
+  document.getElementById('nav-login-btn')?.addEventListener('click', () => {
+      toggleCart(true);
+      goToStep(2);
+  });
   document.getElementById('close-cart-btn')?.addEventListener('click', () => toggleCart(false));
   document.getElementById('cart-overlay')?.addEventListener('click', () => toggleCart(false));
 
@@ -451,4 +441,26 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   updateCartUI();
+
+  // Password Visibility Toggles
+  document.querySelectorAll('.password-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const inputId = btn.getAttribute('data-input');
+      togglePasswordVisibility(btn, inputId);
+    });
+  });
 });
+
+function togglePasswordVisibility(btn, inputId) {
+  const input = document.getElementById(inputId);
+  const svg = btn.querySelector('svg');
+  if (input.type === 'password') {
+    input.type = 'text';
+    // Change to 'eye-off' icon
+    svg.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>';
+  } else {
+    input.type = 'password';
+    // Change back to 'eye' icon
+    svg.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
+  }
+}

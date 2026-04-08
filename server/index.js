@@ -22,7 +22,6 @@ require('./models/OrderItem');
 const authRoutes = require('./routes/auth');
 const inventoryRoutes = require('./routes/inventory');
 const ordersRoutes = require('./routes/orders');
-const webhookRoutes = require('./routes/webhooks');
 const logisticsRoutes = require('./routes/logistics');
 const complianceRoutes = require('./routes/compliance');
 
@@ -30,26 +29,14 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // ── Security Middleware ───────────────────────────────────────────────────────
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      ...helmet.contentSecurityPolicy.getDefaultDirectives(),
-      "script-src": ["'self'", "'unsafe-inline'", "https://checkout.razorpay.com"],
-      "frame-src": ["'self'", "https://api.razorpay.com", "https://tds.razorpay.com"],
-      "connect-src": ["'self'", "https://lumberjack.razorpay.com", "https://api.razorpay.com"],
-      "img-src": ["'self'", "data:", "https://*.razorpay.com"],
-    },
-  },
-}));
+app.use(helmet());
 app.use(cors({
   origin: process.env.FRONTEND_URL || '*',
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
-// ── Body Parsers ──────────────────────────────────────────────────────────────
-// NOTE: /api/webhook/razorpay uses express.raw() — must be before express.json()
-app.use('/api/webhook', webhookRoutes);
+// ── Body Parser ──────────────────────────────────────────────────────────────
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
@@ -93,7 +80,8 @@ app.use(errorHandler);
 async function start() {
   try {
     // Sync all Sequelize models to SQLite (creates tables if not exist)
-    await sequelize.sync({ alter: process.env.NODE_ENV === 'development' });
+    // Sync database without altering on every startup to avoid FK constraints issues in SQLite
+    await sequelize.sync({ alter: false });
     console.log('✅ Database synchronized successfully.');
 
     // Start daily S3 backup scheduler

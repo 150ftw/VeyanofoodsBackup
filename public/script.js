@@ -167,14 +167,15 @@ function updateAuthUI(user) {
   console.log('Updating UI for user:', user);
   const authContainer = document.getElementById('clerk-auth-container');
   const profileBar = document.getElementById('user-profile-bar');
-  const userNameDisplay = document.getElementById('user-name-display');
+  const userButtonContainer = document.getElementById('clerk-user-button');
 
   if (user) {
     if (authContainer) authContainer.style.display = 'none';
     if (profileBar) profileBar.style.display = 'flex';
     
-    let name = user.fullName || user.firstName || user.primaryEmailAddress?.emailAddress || 'User';
-    if (userNameDisplay) userNameDisplay.textContent = name;
+    if (userButtonContainer && clerk) {
+      clerk.mountUserButton(userButtonContainer);
+    }
 
     const shipName = document.getElementById('ship-name');
     const shipEmail = document.getElementById('ship-email');

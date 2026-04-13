@@ -57,11 +57,9 @@
       <h3>Your Cart</h3>
       <button class="close-cart" id="close-cart-btn">&times;</button>
     </div>
-    <div class="user-profile-bar" id="user-profile-bar" style="display: none;">
-      <div class="user-info">
-        <span id="user-name-display">Logged In</span>
-      </div>
-      <button class="logout-link" id="logout-btn">Logout</button>
+    <div id="user-profile-bar" style="display: none; padding: 1rem 1.5rem; background: #fffaf5; border-bottom: 1px solid #eee; align-items: center; justify-content: space-between;">
+      <div id="clerk-user-button"></div>
+      <button class="logout-link" id="logout-btn" style="font-size: 0.85rem; color: #c08b5c; border: none; background: none; cursor: pointer; text-decoration: underline;">Sign Out</button>
     </div>
     <div class="cart-body">
       <div id="clerk-auth-container" style="margin-bottom: 2rem;"></div>

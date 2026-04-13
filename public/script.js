@@ -212,6 +212,7 @@ async function initClerk() {
 }
 
 function updateAuthUI(user) {
+  console.log('UpdateAuthUI firing with user:', user ? (user.fullName || user.id) : 'No user');
   const authContainer = document.getElementById('clerk-auth-container');
   const profileBar = document.getElementById('user-profile-bar');
   const userNameDisplay = document.getElementById('user-name-display');

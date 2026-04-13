@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS users (
   password TEXT NOT NULL,
   role TEXT DEFAULT 'customer',
   is_active BOOLEAN DEFAULT true,
+  clerk_id TEXT UNIQUE, -- Links to Clerk user id
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
@@ -45,6 +46,7 @@ CREATE TABLE IF NOT EXISTS orders (
   total_amount INTEGER NOT NULL,
   is_cod BOOLEAN DEFAULT false,
   razorpay_order_id TEXT,
+  user_id TEXT, -- Optional: links to Clerk user id
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
@@ -60,6 +62,18 @@ CREATE TABLE IF NOT EXISTS order_items (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
+-- 5. Cart Items Table (For session persistence)
+CREATE TABLE IF NOT EXISTS cart_items (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id TEXT NOT NULL, -- Links to Clerk user id
+  sku TEXT NOT NULL,
+  quantity INTEGER NOT NULL DEFAULT 1,
+  price INTEGER NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+  UNIQUE(user_id, sku)
+);
+
 -- Indices for faster lookups
 CREATE INDEX IF NOT EXISTS idx_orders_customer_phone ON orders(customer_phone);
 CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON order_items(order_id);
+CREATE INDEX IF NOT EXISTS idx_cart_items_user_id ON cart_items(user_id);

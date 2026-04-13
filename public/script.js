@@ -33,14 +33,83 @@ const productData = {
   }
 };
 
-const API_BASE_URL = '';
+// Clerk initialization logic is handled in the DOMContentLoaded listener
+let clerk = null;
+const CLERK_PUBLISHABLE_KEY = 'pk_test_cG9ldGljLWJ1enphcmQtMjcuY2xlcmsuYWNjb3VudHMuZGV2JA';
+
+function showToast(message, type = 'success') {
+  const container = document.getElementById('toast-container');
+  if (!container) return;
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `<span>${message}</span>`;
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.classList.add('fade-out');
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
+
+const API_BASE_URL = 'http://localhost:3001';
 
 // Cart State Management
 let cart = JSON.parse(localStorage.getItem('veyano_cart')) || [];
+let currentUser = null;
 
-function saveCart() {
+async function saveCart() {
   localStorage.setItem('veyano_cart', JSON.stringify(cart));
+  
+  if (currentUser) {
+    // Sync with Supabase
+    try {
+      // For simplicity, we'll clear and re-insert for the user
+      // A better way would be upsert, but clear/insert is easier for this scale
+      await supabaseClient
+        .from('cart_items')
+        .delete()
+        .eq('user_id', currentUser.id);
+
+      if (cart.length > 0) {
+        const itemsToInsert = cart.map(item => ({
+          user_id: currentUser.id,
+          sku: item.id,
+          quantity: item.quantity,
+          price: item.price
+        }));
+        await supabaseClient.from('cart_items').insert(itemsToInsert);
+      }
+    } catch (err) {
+      console.error('Error syncing cart:', err);
+    }
+  }
   updateCartUI();
+}
+
+async function fetchUserCart() {
+  if (!currentUser) return;
+  try {
+    const { data, error } = await supabaseClient
+      .from('cart_items')
+      .select('*')
+      .eq('user_id', currentUser.id);
+
+    if (error) throw error;
+    
+    if (data && data.length > 0) {
+      // Map data back to our cart format
+      cart = data.map(item => {
+        const product = productData[item.sku.toLowerCase()];
+        return {
+          ...product,
+          quantity: item.quantity
+        };
+      });
+      localStorage.setItem('veyano_cart', JSON.stringify(cart));
+      updateCartUI();
+    }
+  } catch (err) {
+    console.error('Error fetching cart:', err);
+  }
 }
 
 function updateCartUI() {
@@ -103,6 +172,7 @@ function updateCartUI() {
   
   const codSummaryRow = document.getElementById('cod-fee-row-summary');
   const codSummaryDisplay = document.getElementById('cart-cod-fee');
+  const incentiveMsg = document.getElementById('checkout-incentive-msg');
   
   if (codSummaryRow && codSummaryDisplay) {
     if (codFee > 0) {
@@ -110,6 +180,17 @@ function updateCartUI() {
       codSummaryDisplay.textContent = `₹${codFee}`;
     } else {
       codSummaryRow.style.display = 'none';
+    }
+  }
+
+  if (incentiveMsg) {
+    if (paymentMethod === 'cod') {
+      incentiveMsg.style.display = 'block';
+      const potentialSavings = deliveryFee + codFee;
+      const savingsBreakdown = deliveryFee > 0 ? '(Shipping + COD fees)' : '(COD fee)';
+      incentiveMsg.innerHTML = `Save <strong>₹${potentialSavings}</strong> ${savingsBreakdown} by paying online now!`;
+    } else {
+      incentiveMsg.style.display = 'none';
     }
   }
 
@@ -144,9 +225,89 @@ window.addToCart = (id) => {
   toggleCart(true);
 };
 
-// Auth State Management
-let currentUser = JSON.parse(localStorage.getItem('veyano_user')) || null;
-let authToken = localStorage.getItem('veyano_token') || null;
+// Auth State Management Logic moved to Clerk initialization
+async function initClerk() {
+  if (window.Clerk) {
+    clerk = window.Clerk;
+    try {
+      await clerk.load();
+      console.log('Clerk loaded successfully');
+      
+      clerk.addListener(({ user }) => {
+        currentUser = user;
+        updateAuthUI(user);
+        updateCartUI();
+        if (user) {
+          syncUserWithBackend();
+          fetchUserCart();
+        }
+      });
+
+      // Initial check
+      if (clerk.user) {
+        currentUser = clerk.user;
+        updateAuthUI(clerk.user);
+        syncUserWithBackend();
+        fetchUserCart();
+      } else {
+        mountClerkSignIn();
+      }
+    } catch (err) {
+      console.error('Error loading Clerk:', err);
+    }
+  } else {
+     setTimeout(initClerk, 100); // Retry if script not yet available
+  }
+}
+
+function updateAuthUI(user) {
+  const authContainer = document.getElementById('clerk-auth-container');
+  const profileBar = document.getElementById('user-profile-bar');
+  const userNameDisplay = document.getElementById('user-name-display');
+
+  if (user) {
+    if (authContainer) authContainer.style.display = 'none';
+    if (profileBar) profileBar.style.display = 'flex';
+    if (userNameDisplay) userNameDisplay.textContent = user.fullName || user.primaryEmailAddress.emailAddress;
+  } else {
+    if (authContainer) authContainer.style.display = 'block';
+    if (profileBar) profileBar.style.display = 'none';
+    mountClerkSignIn();
+  }
+}
+
+function mountClerkSignIn() {
+  const container = document.getElementById('clerk-auth-container');
+  if (container && clerk && !clerk.user) {
+    clerk.mountSignIn(container, {
+      appearance: {
+        elements: {
+          rootBox: { width: '100%' },
+          card: { boxShadow: 'none', border: '1px solid #eee' }
+        }
+      }
+    });
+  }
+}
+
+async function syncUserWithBackend() {
+  if (!clerk || !clerk.session) return;
+  try {
+    const token = await clerk.session.getToken();
+    const response = await fetch(`${API_BASE_URL}/api/auth/sync`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    if (!response.ok) {
+      console.warn('User sync failed');
+    }
+  } catch (err) {
+    console.error('Error syncing user:', err);
+  }
+}
 
 function toggleCart(open) {
   const drawer = document.getElementById('cart-drawer');
@@ -156,7 +317,6 @@ function toggleCart(open) {
   if(open) {
     drawer.classList.add('open');
     overlay.classList.add('open');
-    updateUserUI();
   } else {
     drawer.classList.remove('open');
     overlay.classList.remove('open');
@@ -165,121 +325,106 @@ function toggleCart(open) {
   }
 }
 
-function updateUserUI() {
-  const container = document.getElementById('cart-drawer-body');
-  let profileBar = document.querySelector('.user-profile-bar');
-  
-  if (currentUser && authToken) {
-    if (!profileBar) {
-      profileBar = document.createElement('div');
-      profileBar.className = 'user-profile-bar';
-      container.prepend(profileBar);
-    }
-    profileBar.innerHTML = `
-      <span>Hi, ${currentUser.name}</span>
-      <span class="logout-btn" onclick="window.logout()">Logout</span>
-    `;
-    // Pre-fill shipping if available
-    const shipName = document.getElementById('ship-name');
-    const shipEmail = document.getElementById('ship-email');
-    if (shipName && !shipName.value) shipName.value = currentUser.name;
-    if (shipEmail && !shipEmail.value) shipEmail.value = currentUser.email;
-  } else {
-    if (profileBar) profileBar.remove();
-  }
-}
-
-window.logout = () => {
-  localStorage.removeItem('veyano_user');
-  localStorage.removeItem('veyano_token');
-  currentUser = null;
-  authToken = null;
-  updateUserUI();
-  goToStep(1);
-};
-
-// Checkout Step Navigation (4 Steps)
+// Checkout Step Navigation (3 Steps)
 function goToStep(step) {
   const step1 = document.getElementById('cart-step-items');
-  const step2 = document.getElementById('cart-step-auth');
-  const step3 = document.getElementById('cart-step-shipping');
-  const step4 = document.getElementById('cart-step-success');
+  const step2 = document.getElementById('cart-step-shipping'); // Note: step2 is now shipping
+  const step3 = document.getElementById('cart-step-success');
   
   const nextBtn = document.getElementById('next-step-btn');
   const actions = document.getElementById('checkout-actions');
   const summary = document.getElementById('summary-section');
 
   // Hide all
-  [step1, step2, step3, step4].forEach(s => { if(s) s.style.display = 'none'; });
+  [step1, step2, step3].forEach(s => { if(s) s.style.display = 'none'; });
 
   if (step === 1) {
-    step1.style.display = 'block';
-    nextBtn.style.display = 'block';
-    nextBtn.textContent = 'Proceed to Checkout';
-    actions.style.display = 'none';
-    summary.style.display = 'block';
+    if(step1) step1.style.display = 'block';
+    if(nextBtn) {
+      nextBtn.style.display = 'block';
+      nextBtn.textContent = 'Proceed to Checkout';
+    }
+    if(actions) actions.style.display = 'none';
+    if(summary) summary.style.display = 'block';
   } else if (step === 2) {
-    step2.style.display = 'block';
-    nextBtn.style.display = 'none';
-    actions.style.display = 'none'; // Hidden until logged in
-    summary.style.display = 'block';
+    if(step2) step2.style.display = 'block';
+    if(nextBtn) nextBtn.style.display = 'none';
+    if(actions) actions.style.display = 'flex';
+    if(summary) summary.style.display = 'block';
   } else if (step === 3) {
-    step3.style.display = 'block';
-    nextBtn.style.display = 'none';
-    actions.style.display = 'flex';
-    summary.style.display = 'block';
-  } else if (step === 4) {
-    step4.style.display = 'block';
-    nextBtn.style.display = 'none';
-    actions.style.display = 'none';
-    summary.style.display = 'none';
+    if(step3) step3.style.display = 'block';
+    if(nextBtn) nextBtn.style.display = 'none';
+    if(actions) actions.style.display = 'none';
+    if(summary) summary.style.display = 'none';
   }
 }
 
 // Auth Handlers
-async function handleAuth(type, e) {
+async function handleLogin(e) {
   e.preventDefault();
-  const form = e.target;
-  const submitBtn = form.querySelector('button');
-  const originalText = submitBtn.textContent;
+  const email = document.getElementById('login-email').value;
+  const password = document.getElementById('login-password').value;
   
+  const submitBtn = e.target.querySelector('button');
+  const originalText = submitBtn.textContent;
   submitBtn.disabled = true;
-  submitBtn.textContent = 'Please wait...';
+  submitBtn.textContent = 'Verifying...';
 
-  const data = type === 'login' 
-    ? { 
-        email: document.getElementById('login-email').value, 
-        password: document.getElementById('login-pass').value 
-      }
-    : { 
-        name: document.getElementById('signup-name').value, 
-        email: document.getElementById('signup-email').value, 
-        phone: document.getElementById('signup-phone').value,
-        password: document.getElementById('signup-pass').value 
-      };
+  const { data, error } = await supabaseClient.auth.signInWithPassword({
+    email,
+    password
+  });
 
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/auth/${type}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    });
-
-    const result = await response.json();
-    if (!response.ok) throw new Error(result.error || 'Authentication failed');
-
-    authToken = result.token;
-    currentUser = result.user;
-    localStorage.setItem('veyano_token', authToken);
-    localStorage.setItem('veyano_user', JSON.stringify(currentUser));
-    
-    updateUserUI();
-    goToStep(3); // Go to shipping
-  } catch (err) {
-    alert(err.message);
-  } finally {
+  if (error) {
+    showToast('Invalid Credentials', 'error');
     submitBtn.disabled = false;
     submitBtn.textContent = originalText;
+  } else {
+    // onAuthStateChange handles the UI
+    showToast('Logged in successfully!');
+  }
+}
+
+async function handleSignup(e) {
+  e.preventDefault();
+  const name = document.getElementById('signup-name').value;
+  const email = document.getElementById('signup-email').value;
+  const phone = document.getElementById('signup-phone').value;
+  const password = document.getElementById('signup-password').value;
+
+  const submitBtn = e.target.querySelector('button');
+  const originalText = submitBtn.textContent;
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Creating Account...';
+
+  const { data, error } = await supabaseClient.auth.signUp({
+    email,
+    password,
+    options: {
+      data: {
+        full_name: name,
+        mobile: phone
+      }
+    }
+  });
+
+  if (error) {
+    showToast(error.message, 'error');
+    submitBtn.disabled = false;
+    submitBtn.textContent = originalText;
+  } else {
+    showToast('Account created! Please check your email.');
+    // Ideally log them in or wait for verification
+  }
+}
+
+async function handleLogout() {
+  if (clerk) {
+    await clerk.signOut();
+    cart = [];
+    localStorage.removeItem('veyano_cart');
+    updateCartUI();
+    showToast('Logged out');
   }
 }
 
@@ -290,8 +435,7 @@ async function placeOrder() {
     return form.reportValidity();
   }
 
-  // Double check login
-  if (!authToken) return goToStep(2);
+  // Guests can place orders directly
 
   const placeBtn = document.getElementById('place-order-btn');
   placeBtn.disabled = true;
@@ -317,12 +461,18 @@ async function placeOrder() {
   };
 
   try {
+    const headers = { 
+      'Content-Type': 'application/json'
+    };
+    
+    if (clerk && clerk.session) {
+      const token = await clerk.session.getToken();
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch(`${API_BASE_URL}/api/orders`, {
       method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${authToken}`
-      },
+      headers: headers,
       body: JSON.stringify(orderData)
     });
 
@@ -342,7 +492,7 @@ async function placeOrder() {
 function showSuccess(orderNumber) {
   const display = document.getElementById('order-number-display');
   if(display) display.textContent = `Order #${orderNumber}`;
-  goToStep(4);
+  goToStep(3); // Success is now step 3
   cart = [];
   saveCart();
 }
@@ -414,12 +564,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Checkout Step Listeners
   document.getElementById('next-step-btn')?.addEventListener('click', () => {
     if (cart.length === 0) return alert("Your cart is empty!");
-    
-    if (!authToken) {
-      goToStep(2); // Force Login/Register
-    } else {
-      goToStep(3); // Already logged in, go to shipping
-    }
+    goToStep(2); // Go directly to shipping
   });
 
   document.getElementById('back-to-cart-btn')?.addEventListener('click', () => {
@@ -428,33 +573,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('place-order-btn')?.addEventListener('click', placeOrder);
 
-  // Auth Tab Logic
-  document.getElementById('tab-login')?.addEventListener('click', () => {
-    document.getElementById('tab-login').classList.add('active');
-    document.getElementById('tab-signup').classList.remove('active');
-    document.getElementById('login-form').style.display = 'block';
-    document.getElementById('signup-form').style.display = 'none';
-  });
+  // Initialize Clerk
+  initClerk();
 
-  document.getElementById('tab-signup')?.addEventListener('click', () => {
-    document.getElementById('tab-signup').classList.add('active');
-    document.getElementById('tab-login').classList.remove('active');
-    document.getElementById('signup-form').style.display = 'block';
-    document.getElementById('login-form').style.display = 'none';
-  });
+  document.getElementById('logout-btn')?.addEventListener('click', handleLogout);
 
-  document.getElementById('login-form')?.addEventListener('submit', (e) => handleAuth('login', e));
-  document.getElementById('signup-form')?.addEventListener('submit', (e) => handleAuth('register', e));
 
   // COD logic UI
   document.querySelectorAll('input[name="paymentMethod"]').forEach(input => {
-    input.addEventListener('change', (e) => {
-      const codRow = document.getElementById('cod-fee-row');
-      if (e.target.value === 'cod') {
-        codRow.style.display = 'flex';
-      } else {
-        codRow.style.display = 'none';
-      }
+    input.addEventListener('change', () => {
       updateCartUI();
     });
   });

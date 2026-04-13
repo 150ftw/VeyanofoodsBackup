@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 const supabase = require('../config/supabase');
 const authMiddleware = require('../middleware/auth');
+const clerkClient = require('../config/clerk');
 const { applyCODLogic, isCODReadyForDispatch } = require('../services/codService');
 const { deductStock } = require('../services/fefoService');
 const { generateInvoice } = require('../services/invoiceService');
@@ -33,6 +34,18 @@ router.post('/', async (req, res, next) => {
       shippingAddress, shippingPincode, shippingCity, shippingState,
       notes, razorpayOrderId,
     } = req.body;
+
+    let userId = null;
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      try {
+        const token = authHeader.split(' ')[1];
+        const decoded = await clerkClient.verifyToken(token);
+        if (decoded && decoded.sub) userId = decoded.sub;
+      } catch (err) {
+        console.warn('[Orders] Could not verify Clerk token for order:', err.message);
+      }
+    }
 
     if (!paymentMethod) return res.status(400).json({ error: 'paymentMethod is required.' });
     if (!items || !items.length) return res.status(400).json({ error: 'Order must have at least one item.' });
@@ -70,7 +83,8 @@ router.post('/', async (req, res, next) => {
       gst_amount: orderData.gstAmount,
       total_amount: orderData.totalAmount,
       is_cod: orderData.isCOD,
-      razorpay_order_id: orderData.razorpayOrderId
+      razorpay_order_id: orderData.razorpayOrderId,
+      user_id: userId
     };
 
     const { data: order, error: orderError } = await supabase

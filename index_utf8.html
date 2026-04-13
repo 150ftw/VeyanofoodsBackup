@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Veyano - Premium freshly roasted makhana (fox nuts). A clean, light, and healthy alternative to fried snacks. Shop Plain, Salted, and Peri-Peri flavors. Free delivery on orders over ₹499.">
+  <meta name="description" content="Veyano - Premium freshly roasted makhana (fox nuts). A clean, light, and healthy alternative to fried snacks. Shop Plain, Salted, and Peri-Peri flavors. Free delivery on orders over Γé╣499.">
   <meta name="keywords" content="Makhana, Roasted Makhana, Healthy Snacks, Diet Snacks, Low Calorie, Fox Nuts, Peri Peri Makhana, Indian Snacks, Veyano Foods">
   <meta name="author" content="Veyano Foods">
   <meta name="robots" content="index, follow">
@@ -24,7 +24,7 @@
   <meta property="twitter:card" content="summary_large_image">
   <meta property="twitter:url" content="https://www.veyano.in/">
   <meta property="twitter:title" content="Veyano | Premium Roasted Makhana">
-  <meta property="twitter:description" content="Healthy, guilt-free snacking starting from ₹399. Shop Veyano now.">
+  <meta property="twitter:description" content="Healthy, guilt-free snacking starting from Γé╣399. Shop Veyano now.">
   <meta property="twitter:image" content="https://www.veyano.in/assets/plain.png">
 
   <!-- Google Fonts -->
@@ -62,6 +62,7 @@
       <a href="index.html" class="brand-logo" id="nav-logo">Veyano</a>
       <div class="nav-actions">
         <nav style="display: flex; align-items: center; gap: 1.5rem;">
+          <a href="javascript:void(0)" id="nav-login-btn" style="font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-color);">Log In / Sign Up</a>
           <a href="#products" class="btn btn-outline" style="padding: 0.5rem 1.5rem; text-transform: none;">Shop Now</a>
         </nav>
         <div class="cart-icon" id="cart-icon-btn" style="display: flex; align-items: center; gap: 8px;">
@@ -129,9 +130,9 @@
     <section class="products" id="products">
       <div class="container">
         <div style="background: var(--glass-bg); padding: 1rem 2rem; border-radius: 12px; border: 1px solid var(--glass-border); margin-bottom: 2rem; display: flex; align-items: center; justify-content: center; gap: 2rem; font-size: 0.95rem; font-weight: 500;">
-          <span style="display: flex; align-items: center; gap: 0.5rem;">🚚 FREE Delivery above ₹499 (₹50 if below)</span>
+          <span style="display: flex; align-items: center; gap: 0.5rem;">≡ƒÜÜ FREE Delivery above Γé╣499 (Γé╣50 if below)</span>
           <span style="width: 1px; height: 15px; background: #ddd;"></span>
-          <span style="display: flex; align-items: center; gap: 0.5rem;">💸 Cash on Delivery Available (+₹79)</span>
+          <span style="display: flex; align-items: center; gap: 0.5rem;">≡ƒÆ╕ Cash on Delivery Available (+Γé╣79)</span>
         </div>
         <h2 class="section-title">Our Premium Selection</h2>
         <div class="product-grid">
@@ -280,7 +281,7 @@
         <ul>
             <li><a href="https://www.instagram.com/veyanofoods/?hl=en" target="_blank">Instagram</a></li>
         </ul>
-        <div class="cod-badge">COD Available (₹79 extra) | Free Delivery above ₹499</div>
+        <div class="cod-badge">COD Available (Γé╣79 extra) | Free Delivery above Γé╣499</div>
       </div>
     </div>
   </footer>
@@ -292,18 +293,7 @@
       <h3>Your Cart</h3>
       <button class="close-cart" id="close-cart-btn">&times;</button>
     </div>
-    <div class="user-profile-bar" id="user-profile-bar" style="display: none;">
-      <div class="user-info">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
-        <span id="user-name-display">Guest</span>
-      </div>
-      <button class="logout-link" id="logout-btn">Logout</button>
-    </div>
-
     <div class="cart-body" id="cart-drawer-body">
-      <!-- Clerk Auth Container -->
-      <div id="clerk-auth-container" style="margin-bottom: 1.5rem;"></div>
-
       <!-- Step 1: Cart Items -->
       <div id="cart-step-items">
         <div id="cart-items-container">
@@ -311,6 +301,51 @@
         </div>
       </div>
 
+      <!-- Step 2: Login / Register [NEW] -->
+      <div id="cart-step-auth" style="display: none;">
+        <div class="auth-tabs">
+          <button class="auth-tab active" id="tab-login">Login</button>
+          <button class="auth-tab" id="tab-signup">Sign Up</button>
+        </div>
+        
+        <!-- Login Form -->
+        <form id="login-form" class="auth-form">
+          <div class="form-group">
+            <input type="email" id="login-email" placeholder="Email Address" required>
+          </div>
+          <div class="form-group">
+            <div class="password-group">
+              <input type="password" id="login-pass" placeholder="Password" required>
+              <div class="password-toggle" data-input="login-pass">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              </div>
+            </div>
+          </div>
+          <button type="submit" class="btn" style="width: 100%;">Login to Continue</button>
+        </form>
+
+        <!-- Signup Form -->
+        <form id="signup-form" class="auth-form" style="display: none;">
+          <div class="form-group">
+            <input type="text" id="signup-name" placeholder="Full Name" required minlength="3">
+          </div>
+          <div class="form-group">
+            <input type="email" id="signup-email" placeholder="Email Address" required>
+          </div>
+          <div class="form-group">
+            <input type="tel" id="signup-phone" placeholder="Mobile Number (10 Digits)" required pattern="[6-9][0-9]{9}" title="Please enter a valid 10-digit mobile number">
+          </div>
+          <div class="form-group">
+            <div class="password-group">
+              <input type="password" id="signup-pass" placeholder="Create Password (min 8 characters)" required minlength="8">
+              <div class="password-toggle" data-input="signup-pass">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              </div>
+            </div>
+          </div>
+          <button type="submit" class="btn" style="width: 100%;">Create Account</button>
+        </form>
+      </div>
 
       <!-- Step 2: Shipping Form [NEW] -->
       <div id="cart-step-shipping" style="display: none;">
@@ -347,7 +382,7 @@
           <div class="payment-methods">
             <label class="payment-option">
               <input type="radio" name="paymentMethod" value="cod" checked>
-              <span>Cash on Delivery (₹79 Extra)</span>
+              <span>Cash on Delivery (Γé╣79 Extra)</span>
             </label>
           </div>
         </form>
@@ -366,22 +401,19 @@
       <div id="summary-section">
         <div class="cart-summary-row">
           <span>Subtotal</span>
-          <span id="cart-subtotal">₹0</span>
+          <span id="cart-subtotal">Γé╣0</span>
         </div>
         <div class="cart-summary-row">
-          <span>Delivery Charge (Orders under ₹499)</span>
-          <span id="cart-delivery">₹0</span>
+          <span>Delivery Charge (Orders under Γé╣499)</span>
+          <span id="cart-delivery">Γé╣0</span>
         </div>
         <div class="cart-summary-row" id="cod-fee-row-summary" style="display: none;">
           <span>COD Handling Fee</span>
-          <span id="cart-cod-fee">₹79</span>
+          <span id="cart-cod-fee">Γé╣79</span>
         </div>
         <div class="cart-summary-total">
           <span>Total</span>
-          <span id="cart-total">₹0</span>
-        </div>
-        <div id="checkout-incentive-msg" style="display: none; color: #c08b5c; font-weight: bold; font-size: 0.85rem; text-align: center; margin: 1rem 0; padding: 0.5rem; border: 1px dashed var(--accent-color); border-radius: 8px;">
-           Save ₹129 (Shipping + COD fees) by paying online now!
+          <span id="cart-total">Γé╣0</span>
         </div>
       </div>
       <button class="btn" id="next-step-btn" style="width: 100%;">Proceed to Checkout</button>
@@ -392,13 +424,7 @@
     </div>
   </div>
 
-  <!-- Clerk Auth SDK -->
-  <script async crossorigin="anonymous" data-clerk-publishable-key="pk_test_cG9ldGljLWJ1enphcmQtMjcuY2xlcmsuYWNjb3VudHMuZGV2JA" src="https://cdn.clerk.com/v1/clerk.js"></script>
-  
   <script src="script.js"></script>
   <script src="liquid-ether.js"></script>
-
-  <!-- Toast Container -->
-  <div id="toast-container" class="toast-container"></div>
 </body>
 </html>

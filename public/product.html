@@ -63,7 +63,6 @@
       <a href="index.html" class="brand-logo">Veyano</a>
       <div class="nav-actions">
         <nav style="display: flex; align-items: center; gap: 1.5rem;">
-          <a href="javascript:void(0)" id="nav-login-btn" style="font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-color);">Log In / Sign Up</a>
           <a href="index.html#products" class="btn btn-outline" style="padding: 0.5rem 1.5rem; text-transform: none;">All Products</a>
         </nav>
         <div class="cart-icon" id="cart-icon-btn" style="display: flex; align-items: center; gap: 8px;">
@@ -165,7 +164,57 @@
       <h3>Your Cart</h3>
       <button class="close-cart" id="close-cart-btn">&times;</button>
     </div>
+    <div class="user-profile-bar" id="user-profile-bar" style="display: none;">
+      <div class="user-info">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/></svg>
+        <span id="user-name-display">Guest</span>
+      </div>
+      <button class="logout-link" id="logout-btn">Logout</button>
+    </div>
+
     <div class="cart-body" id="cart-drawer-body">
+      <!-- Auth Section -->
+      <div id="cart-auth-section">
+        <div class="auth-tabs">
+          <button class="auth-tab active" data-tab="login">Login</button>
+          <button class="auth-tab" data-tab="signup">Sign Up</button>
+        </div>
+
+        <!-- Login Form -->
+        <form id="login-form" class="auth-form">
+          <div class="form-group">
+            <input type="email" id="login-email" placeholder="Email Address" required>
+          </div>
+          <div class="form-group password-group">
+            <input type="password" id="login-password" placeholder="Password" required>
+            <span class="password-toggle" data-input="login-password">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            </span>
+          </div>
+          <button type="submit" class="btn" style="width: 100%; margin-top: 1rem;">Login</button>
+        </form>
+
+        <!-- Signup Form -->
+        <form id="signup-form" class="auth-form" style="display: none;">
+          <div class="form-group">
+            <input type="text" id="signup-name" placeholder="Full Name" required>
+          </div>
+          <div class="form-group">
+            <input type="email" id="signup-email" placeholder="Email Address" required>
+          </div>
+          <div class="form-group">
+            <input type="tel" id="signup-phone" placeholder="Mobile Number" required>
+          </div>
+          <div class="form-group password-group">
+            <input type="password" id="signup-password" placeholder="Password" required>
+            <span class="password-toggle" data-input="signup-password">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            </span>
+          </div>
+          <button type="submit" class="btn" style="width: 100%; margin-top: 1rem;">Create Account</button>
+        </form>
+      </div>
+
       <!-- Step 1: Cart Items -->
       <div id="cart-step-items">
         <div id="cart-items-container">
@@ -173,51 +222,6 @@
         </div>
       </div>
 
-      <!-- Step 2: Login / Register -->
-      <div id="cart-step-auth" style="display: none;">
-        <div class="auth-tabs">
-          <button class="auth-tab active" id="tab-login">Login</button>
-          <button class="auth-tab" id="tab-signup">Sign Up</button>
-        </div>
-        
-        <!-- Login Form -->
-        <form id="login-form" class="auth-form">
-          <div class="form-group">
-            <input type="email" id="login-email" placeholder="Email Address" required>
-          </div>
-          <div class="form-group">
-            <div class="password-group">
-              <input type="password" id="login-pass" placeholder="Password" required>
-              <div class="password-toggle" data-input="login-pass">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-              </div>
-            </div>
-          </div>
-          <button type="submit" class="btn" style="width: 100%;">Login to Continue</button>
-        </form>
-
-        <!-- Signup Form -->
-        <form id="signup-form" class="auth-form" style="display: none;">
-          <div class="form-group">
-            <input type="text" id="signup-name" placeholder="Full Name" required minlength="3">
-          </div>
-          <div class="form-group">
-            <input type="email" id="signup-email" placeholder="Email Address" required>
-          </div>
-          <div class="form-group">
-            <input type="tel" id="signup-phone" placeholder="Mobile Number (10 Digits)" required pattern="[6-9][0-9]{9}" title="Please enter a valid 10-digit mobile number">
-          </div>
-          <div class="form-group">
-            <div class="password-group">
-              <input type="password" id="signup-pass" placeholder="Create Password (min 8 characters)" required minlength="8">
-              <div class="password-toggle" data-input="signup-pass">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-              </div>
-            </div>
-          </div>
-          <button type="submit" class="btn" style="width: 100%;">Create Account</button>
-        </form>
-      </div>
 
       <!-- Step 3: Shipping Form -->
       <div id="cart-step-shipping" style="display: none;">
@@ -286,6 +290,9 @@
           <span>Total</span>
           <span id="cart-total">₹0</span>
         </div>
+        <div id="checkout-incentive-msg" style="display: none; color: #c08b5c; font-weight: bold; font-size: 0.85rem; text-align: center; margin: 1rem 0; padding: 0.5rem; border: 1px dashed var(--accent-color); border-radius: 8px;">
+           Save ₹129 (Shipping + COD fees) by paying online now!
+        </div>
       </div>
       <button class="btn" id="next-step-btn" style="width: 100%;">Proceed to Checkout</button>
       <div id="checkout-actions" style="display: none; gap:10px;">
@@ -295,7 +302,13 @@
     </div>
   </div>
 
+  <!-- Supabase Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <script src="script.js"></script>
   <script src="liquid-ether.js"></script>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="toast-container"></div>
 </body>
 </html>

@@ -1,37 +1,32 @@
-// server/middleware/auth.js — JWT authentication guard middleware
+// server/middleware/auth.js — Clerk authentication guard middleware
 
-const jwt = require('jsonwebtoken');
-const supabase = require('../config/supabase');
-require('dotenv').config();
+const clerkClient = require('../config/clerk');
 
 module.exports = async (req, res, next) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Authentication required. Please provide a valid Bearer token.' });
+    return res.status(401).json({ error: 'Authentication required. Please provide a valid Clerk token.' });
   }
 
   const token = authHeader.split(' ')[1];
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    // Verify token using Clerk
+    const decoded = await clerkClient.verifyToken(token);
     
-    const { data: user, error } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', decoded.id)
-      .single();
+    // Decoded token contains user info in 'sub' (user_id)
+    // We can also fetch the full user object if needed
+    const user = await clerkClient.users.getUser(decoded.sub);
 
-    if (error || !user || !user.is_active) {
-      return res.status(401).json({ error: 'User account not found or deactivated.' });
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid or expired Clerk token.' });
     }
 
     req.user = user;
     next();
   } catch (err) {
-    if (err.name === 'TokenExpiredError') {
-      return res.status(401).json({ error: 'Token has expired. Please log in again.' });
-    }
-    return res.status(401).json({ error: 'Invalid token.' });
+    console.error('Clerk Auth Middleware Error:', err);
+    return res.status(401).json({ error: 'Authentication failed. Please log in with Clerk again.' });
   }
 };

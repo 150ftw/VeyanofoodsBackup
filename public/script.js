@@ -212,16 +212,27 @@ async function initClerk() {
 }
 
 function updateAuthUI(user) {
-  console.log('UpdateAuthUI firing with user:', user ? (user.fullName || user.id) : 'No user');
   const authContainer = document.getElementById('clerk-auth-container');
   const profileBar = document.getElementById('user-profile-bar');
   const userNameDisplay = document.getElementById('user-name-display');
 
-  if (user) {
+  console.log('updateAuthUI called with user:', user);
+
+  if (user && typeof user === 'object' && (user.id || user.fullName)) {
     if (authContainer) authContainer.style.display = 'none';
     if (profileBar) profileBar.style.display = 'flex';
     
-    const displayName = user.fullName || user.primaryEmailAddress?.emailAddress || 'User';
+    // Robust name falling back from FullName -> First/Last -> Email -> 'User'
+    let displayName = user.fullName;
+    if (!displayName && user.firstName) {
+      displayName = user.lastName ? `${user.firstName} ${user.lastName}` : user.firstName;
+    }
+    if (!displayName && user.primaryEmailAddress) {
+      displayName = user.primaryEmailAddress.emailAddress;
+    }
+    if (!displayName) displayName = 'Logged In';
+
+    console.log('Setting Display Name to:', displayName);
     if (userNameDisplay) userNameDisplay.textContent = displayName;
 
     // Pre-fill Shipping Details
@@ -229,11 +240,12 @@ function updateAuthUI(user) {
     const shipEmail = document.getElementById('ship-email');
     const shipPhone = document.getElementById('ship-phone');
 
-    if (shipName && !shipName.value) shipName.value = user.fullName || '';
+    if (shipName && !shipName.value) shipName.value = user.fullName || user.firstName || '';
     if (shipEmail && !shipEmail.value) shipEmail.value = user.primaryEmailAddress?.emailAddress || '';
     if (shipPhone && !shipPhone.value) shipPhone.value = user.primaryPhoneNumber?.phoneNumber || '';
 
   } else {
+    // No valid user object
     if (authContainer) authContainer.style.display = 'block';
     if (profileBar) profileBar.style.display = 'none';
     mountClerkSignIn();

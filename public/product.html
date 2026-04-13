@@ -173,47 +173,8 @@
     </div>
 
     <div class="cart-body" id="cart-drawer-body">
-      <!-- Auth Section -->
-      <div id="cart-auth-section">
-        <div class="auth-tabs">
-          <button class="auth-tab active" data-tab="login">Login</button>
-          <button class="auth-tab" data-tab="signup">Sign Up</button>
-        </div>
-
-        <!-- Login Form -->
-        <form id="login-form" class="auth-form">
-          <div class="form-group">
-            <input type="email" id="login-email" placeholder="Email Address" required>
-          </div>
-          <div class="form-group password-group">
-            <input type="password" id="login-password" placeholder="Password" required>
-            <span class="password-toggle" data-input="login-password">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-            </span>
-          </div>
-          <button type="submit" class="btn" style="width: 100%; margin-top: 1rem;">Login</button>
-        </form>
-
-        <!-- Signup Form -->
-        <form id="signup-form" class="auth-form" style="display: none;">
-          <div class="form-group">
-            <input type="text" id="signup-name" placeholder="Full Name" required>
-          </div>
-          <div class="form-group">
-            <input type="email" id="signup-email" placeholder="Email Address" required>
-          </div>
-          <div class="form-group">
-            <input type="tel" id="signup-phone" placeholder="Mobile Number" required>
-          </div>
-          <div class="form-group password-group">
-            <input type="password" id="signup-password" placeholder="Password" required>
-            <span class="password-toggle" data-input="signup-password">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-            </span>
-          </div>
-          <button type="submit" class="btn" style="width: 100%; margin-top: 1rem;">Create Account</button>
-        </form>
-      </div>
+      <!-- Clerk Auth Container -->
+      <div id="clerk-auth-container" style="margin-bottom: 1.5rem;"></div>
 
       <!-- Step 1: Cart Items -->
       <div id="cart-step-items">
@@ -302,8 +263,8 @@
     </div>
   </div>
 
-  <!-- Supabase Client -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Clerk Auth SDK -->
+  <script async crossorigin="anonymous" data-clerk-publishable-key="pk_test_cG9ldGljLWJ1enphcmQtMjcuY2xlcmsuYWNjb3VudHMuZGV2JA" src="https://cdn.clerk.com/v1/clerk.js"></script>
 
   <script src="script.js"></script>
   <script src="liquid-ether.js"></script>

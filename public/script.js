@@ -2,7 +2,7 @@ const productData = {
   plain: { id: "plain", title: "Classic Plain Makhana", price: 399, hoverImage: "./assets/plain_hover.png", image: "./assets/plain.png", ingredients: "Premium Grade Fox Nuts (Makhana)." },
   salted: { id: "salted", title: "Lightly Salted Makhana", price: 399, hoverImage: "./assets/salted_hover.png", image: "./assets/salted.png", ingredients: "Premium Grade Fox Nuts (Makhana), Himalayan Pink Salt, Rice Bran Oil." },
   periperi: { id: "periperi", title: "Fiery Peri-Peri Makhana", price: 399, hoverImage: "./assets/periperi_hover.png", image: "./assets/periperi.png", ingredients: "Premium Grade Fox Nuts (Makhana), Peri-Peri Spice Blend, Rice Bran Oil." },
-  combo: { id: "combo", title: "The Ultimate Combo Pack", price: 899, hoverImage: "./assets/combo_hover.png", image: "./assets/combo.png", ingredients: "Contains Plain, Salted, and Peri-Peri 200g Packs." }
+  combo: { id: "combo", title: "The Ultimate Combo Pack", price: 999, hoverImage: "./assets/combo_hover.png", image: "./assets/combo.png", ingredients: "Contains Plain, Salted, and Peri-Peri 200g Packs." }
 };
 
 let clerk = null;

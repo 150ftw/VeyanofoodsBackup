@@ -177,6 +177,9 @@ function updateAuthUI(user) {
       clerk.mountUserButton(userButtonContainer);
     }
 
+    const nextBtn = document.getElementById('next-step-btn');
+    if (nextBtn) nextBtn.textContent = 'PROCEED TO CHECKOUT';
+
     const shipName = document.getElementById('ship-name');
     const shipEmail = document.getElementById('ship-email');
     if (shipName && !shipName.value) shipName.value = user.fullName || user.firstName || '';
@@ -184,6 +187,10 @@ function updateAuthUI(user) {
   } else {
     if (authContainer) authContainer.style.display = 'block';
     if (profileBar) profileBar.style.display = 'none';
+    
+    const nextBtn = document.getElementById('next-step-btn');
+    if (nextBtn) nextBtn.textContent = 'LOGIN TO CONTINUE';
+    
     mountClerkSignIn();
   }
 }
@@ -211,6 +218,11 @@ function toggleCart(open) {
 }
 
 function goToStep(step) {
+  if (step === 2 && !clerk?.user) {
+    if (clerk) clerk.openSignIn();
+    return;
+  }
+
   const s1 = document.getElementById('cart-step-items'), s2 = document.getElementById('cart-step-shipping'), s3 = document.getElementById('cart-step-success');
   const nextBtn = document.getElementById('next-step-btn'), actions = document.getElementById('checkout-actions'), summary = document.getElementById('summary-section');
   [s1, s2, s3].forEach(s => { if(s) s.style.display = 'none'; });
@@ -264,7 +276,14 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('nav-login-btn')?.addEventListener('click', () => toggleCart(true));
   document.getElementById('close-cart-btn')?.addEventListener('click', () => toggleCart(false));
   document.getElementById('cart-overlay')?.addEventListener('click', () => toggleCart(false));
-  document.getElementById('next-step-btn')?.addEventListener('click', () => { if (!cart.length) return alert("Empty!"); goToStep(2); });
+  document.getElementById('next-step-btn')?.addEventListener('click', () => { 
+    if (!cart.length) return alert("Empty!"); 
+    if (!clerk?.user) {
+      clerk?.openSignIn();
+      return;
+    }
+    goToStep(2); 
+  });
   document.getElementById('back-to-cart-btn')?.addEventListener('click', () => goToStep(1));
   document.getElementById('place-order-btn')?.addEventListener('click', placeOrder);
   initClerk();
